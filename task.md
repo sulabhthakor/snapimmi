@@ -1,0 +1,29 @@
+# Task List: Visa SaaS Platform Implementation
+
+- [x] **Phase 1: Foundation & Infrastructure** <!-- id: 0 -->
+    - [x] Initialize Next.js 15 Monorepo with Turbo/Nx (or standard repo structure as per preference) <!-- id: 1 -->
+    - [x] Configure Docker Compose (Postgres, Redis, MinIO/Local Storage) <!-- id: 2 -->
+    - [x] Setup Prisma Schema & Migrations (V2.1 Optimized) <!-- id: 3 -->
+    - [/] Implement Multi-tenant Authentication (Firm + User + Role Guards) <!-- id: 4 -->
+- [ ] **Phase 2: Core CRM (Customers & Families)** <!-- id: 5 -->
+    - [ ] Create `features/customers` structure <!-- id: 6 -->
+    - [ ] Build Customer List Table (Serverside Pagination + Filters) <!-- id: 7 -->
+    - [ ] Build "Add Customer" Wizzard (Basic -> Passport -> Family) <!-- id: 8 -->
+    - [ ] Implement Family Grouping Logic <!-- id: 9 -->
+- [ ] **Phase 3: Document Intelligence** <!-- id: 10 -->
+    - [ ] Implement File Upload Component (Drag & Drop) <!-- id: 11 -->
+    - [ ] Create Document Vault UI (Grid/List View) <!-- id: 12 -->
+    - [ ] Setup Secure Signed URL Access for files <!-- id: 13 -->
+- [ ] **Phase 4: Application Pipeline (Kanban)** <!-- id: 14 -->
+    - [ ] Build Kanban Board UI (React DND) <!-- id: 15 -->
+    - [ ] Implement Status Change Server Actions <!-- id: 16 -->
+- [ ] **Phase 5: Automation Engine** <!-- id: 17 -->
+    - [ ] Setup BullMQ Worker for Expiry Checks <!-- id: 18 -->
+    - [ ] Integrate Email Provider (Resend/Nodemailer) <!-- id: 19 -->
+    - [ ] Integrate WhatsApp (Evolution API) <!-- id: 20 -->
+- [ ] **Phase 6: Dashboard & Analytics** <!-- id: 21 -->
+    - [ ] Implement Dashboard Widgets (Expiry Funnel, Pipeline Donut) <!-- id: 22 -->
+    - [ ] Build Global Search (Cmd+K) <!-- id: 23 -->
+- [ ] **Phase 7: Production Readiness** <!-- id: 24 -->
+    - [ ] Security Audit (Rate Limiting, Headers) <!-- id: 25 -->
+    - [ ] Final Deployment Walkthrough <!-- id: 26 -->

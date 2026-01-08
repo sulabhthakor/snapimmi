@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+enum Role {
+  SUPER_ADMIN
+  FIRM_OWNER
+  AGENT
+}
+
+enum FirmStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum AppStatus {
+  LEAD
+  DOCS_COLLECTED
+  APPLIED
+  BIOMETRICS
+  APPROVED
+  REJECTED
+}
+
+// --- CORE MODELS ---
+
+model Firm {
+  id              String        @id @default(uuid())
+  name            String
+  slug            String        @unique // For vanity URLs
+  email           String        // Official contact email
+  phone           String?
+  logoUrl         String?
+  subscriptionPlan String       @default("FREE") 
+  status          FirmStatus    @default(ACTIVE)
+  
+  settings        Json?         // { "branding": { "color": "#000" }, "smtp": {...} }
+  
+  users           User[]
+  customers       Customer[]
+  applications    Application[]
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?     // 🗑️ Soft Delete
+  
+  @@index([status])
+}
+
+model User {
+  id        String    @id @default(uuid())
+  firmId    String?   // Null for Super Admins
+  firm      Firm?     @relation(fields: [firmId], references: [id])
+  
+  name      String
+  email     String    @unique
+  password  String    // Argon2 hashed
+  role      Role      @default(AGENT)
+  isActive  Boolean   @default(true)
+  
+  lastLogin DateTime?
+  
+  // Audits
+  actions   ActivityLog[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? 
+  
+  @@index([firmId])
+  @@index([email])
+}
+
+// --- BUSINESS MODELS ---
+
+model Customer {
+  id            String    @id @default(uuid())
+  firmId        String
+  firm          Firm      @relation(fields: [firmId], references: [id])
+  
+  fullName      String
+  email         String?   // Can be null for family members
+  phone         String?   
+  passportMeta  String?   // Quick search field (e.g. Passport Number)
+  
+  // Family Logic
+  familyGroupId String?
+  familyGroup   FamilyGroup? @relation(fields: [familyGroupId], references: [id])
+  isFamilyHead  Boolean      @default(false)
+  
+  visas         Visa[]
+  passports     Passport[]
+  documents     Document[]
+  applications  Application[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  
+  @@index([firmId])
+  @@index([phone])
+  @@index([email])
+  @@index([familyGroupId])
+}
+
+model FamilyGroup {
+  id        String     @id @default(uuid())
+  firmId    String
+  name      String     // e.g. "The Patel Family"
+  members   Customer[]
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Passport {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  
+  number      String
+  country     String
+  issueDate   DateTime
+  expiryDate  DateTime
+  
+  frontImage  String?   // Path to file
+  backImage   String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([expiryDate]) // ⚡️ CRITICAL for Expiry Cron Jobs
+  @@index([number])
+}
+
+model Visa {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  
+  country     String
+  type        String    // e.g. "Work", "Tourist"
+  grantDate   DateTime?
+  expiryDate  DateTime
+  status      String    // Active, Expired
+  
+  fileUrl     String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([expiryDate]) // ⚡️ CRITICAL for Expiry Cron Jobs
+}
+
+model Application {
+  id          String    @id @default(uuid())
+  firmId      String
+  firm        Firm      @relation(fields: [firmId], references: [id])
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  
+  targetCountry String
+  visaType      String
+  status        AppStatus @default(LEAD)
+  priority      String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  
+  notes       String?   // Changed from @db.Text for broader compatibility, or keep String
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  @@index([firmId, status]) // For Kanban Board filtering
+}
+
+model Document {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  
+  name        String
+  category    String    // "ID Proof", "Financial", "Legal"
+  fileUrl     String
+  fileSize    Int       // In bytes
+  mimeType    String
+  
+  uploadedAt  DateTime  @default(now())
+  deletedAt   DateTime?
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  firmId    String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  action    String   // "VIEW_CUSTOMER", "DELETE_DOCUMENT"
+  ipAddress String?
+  userAgent String?
+  details   Json?    // { "targetId": "123", "oldValue": "A", "newValue": "B" }
+  
+  createdAt DateTime @default(now())
+  
+  @@index([firmId, createdAt]) // For audit trails
+}

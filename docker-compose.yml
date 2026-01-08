@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # 🐘 PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: visa_saas_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: visa_saas
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - visa-network
+
+  # ⚡️ Redis (Queue & Cache)
+  redis:
+    image: redis:7-alpine
+    container_name: visa_saas_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - visa-network
+
+  # 🗄️ MinIO (S3 Compatible Storage)
+  minio:
+    image: minio/minio:latest
+    container_name: visa_saas_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - visa-network
+
+  # 📧 Mailpit (Email Testing)
+  mailpit:
+    image: axllent/mailpit
+    container_name: visa_saas_mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # UI
+    networks:
+      - visa-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+
+networks:
+  visa-network:
+    driver: bridge
