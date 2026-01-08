@@ -1,0 +1,7 @@
+tunnel: c707200a-cff4-4b4a-9675-2041b27d738a
+credentials-file: /etc/cloudflared/c707200a-cff4-4b4a-9675-2041b27d738a.json
+
+ingress:
+  - hostname: si.snapdecode.in
+    service: http://nginx:80
+  - service: http_status:404

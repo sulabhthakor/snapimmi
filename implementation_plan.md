@@ -1,83 +1,50 @@
-# Implementation Plan - Visa SaaS Platform (v2.2)
+# Snapimmi Hybrid Workflow Implementation Plan
 
-This document outlines the step-by-step technical plan to build the "Investor-Grade" Visa Consultancy SaaS.
+## Goal
+Enable a hybrid development workflow for `snapimmi`:
+1.  **Local Development**: Run `pnpm dev` locally on Windows, connecting to a local Windows Postgres instance. Immediate previews without Docker rebuilds.
+2.  **Server/Production**: Run `docker-compose up` to launch a producation-ready stack (Next.js + Postgres + Redis + MinIO + Mailpit + Nginx + Cloudflare Tunnel).
 
 ## User Review Required
 > [!IMPORTANT]
-> **Tech Stack Confirmation**: 
-> - **Framework**: Next.js 15 (App Router)
-> - **DB**: PostgreSQL + Prisma
-> - **UI**: Tailwind + Shadcn/UI
-> - **Queues**: BullMQ + Redis (Critical for automation)
-> - **WhatsApp**: Evolution API (Self-hosted)
+> **Database Data Separation**: 
+> Your Local Development enviromment uses the Postgres installed on Windows. 
+> The Docker environment uses a *separate* Postgres container (`visa_saas_db`). 
+> **Data will not automatically sync between them.** You will have two separate databases.
 
 ## Proposed Changes
 
-### Phase 1: Foundation & Infrastructure (Foundation)
-**Goal**: Establish a solid, secure, and developer-friendly base.
-#### [NEW] [docker-compose.yml](file:///docker-compose.yml)
-- Define services: `app`, `postgres` (v16), `redis` (v7), `minio` (local S3), `mailpit` (local email testing).
-#### [NEW] [Schema Setup](file:///prisma/schema.prisma)
-- Implement the V2.2 Optimized Schema with `Firm`, `User`, `Customer`, `Passport` models.
-- Apply `deletedAt` Soft Delete logic logic in a Prisma extension.
-#### [NEW] [Auth System](file:///src/features/auth)
-- Setup NextAuth.js (v5 beta) or Lucia Auth.
-- Implement Custom Sign-in Page.
-- Create `firm-middleware.ts` to ensure strict tenant isolation (Block access if `user.firmId != param.firmId`).
+### Snapimmi Project (`c:\Docker Hosted\snapimmi`)
 
-### Phase 2: Core CRM (The "People" Layer)
-**Goal**: Enable agencies to manage their client database effectively.
-#### [NEW] [Customer List](file:///src/features/customers/components/CustomerList.tsx)
-- Implementation of the DataTable with server-side pagination, sorting, and filtering.
-- Columns: Name, Status, Next Expiry, Actions.
-#### [NEW] [Customer Wizard](file:///src/features/customers/components/NewCustomerWizard.tsx)
-- Step 1: Zod Form for Basic Info (Name, E-164 Phone).
-- Step 2: Passport Details with validaton.
-- Step 3: Family Grouping selection.
-#### [NEW] [Family Logic](file:///src/features/customers/server/family-actions.ts)
-- Backend logic to link members and auto-assign "Family Head".
+#### Nginx Configuration
+We will introduce Nginx to proxy requests, matching the `localmarketpwa` `SHARED_HOSTING_GUIDE` pattern.
 
-### Phase 3: Document Intelligence & Storage
-**Goal**: A secure, organized digital vault.
-#### [NEW] [File Manager](file:///src/features/documents/components/FileManager.tsx)
-- UI: Grid/List toggle, Folder navigation.
-- Action: "Upload" using `react-dropzone`.
-#### [NEW] [Storage Service](file:///src/core/services/storage.ts)
-- Abstraction layer: `uploadFile(buffer, path)` -> Adapters for S3 (Prod) / MinIO (Dev).
-- **Security**: Endpoint to generate Presigned URLs for viewing files (files never public).
+#### [NEW] [nginx.conf](file:///c:/Docker%20Hosted/snapimmi/nginx/nginx.conf)
+- Standard reverse proxy configuration.
+- Routes traffic to the `visa_saas_app` container.
 
-### Phase 4: Application Pipeline (The "Work" Layer)
-**Goal**: Visualize the business flow.
-#### [NEW] [Kanban Board](file:///src/features/applications/components/Board.tsx)
-- Drag-and-drop interface using `@dnd-kit/core`.
-- Optimistic UI updates (UI moves instantly, reverts if server fails).
-#### [NEW] [State Machine](file:///src/features/applications/server/workflow.ts)
-- Rules: Can't move to "Approved" without uploading "Visa Grant Letter".
+#### Docker Compose Configuration
+We will transform `docker-compose.yml` from a "dev-in-docker" setup to a "server/prod" setup.
 
-### Phase 5: Automation Engine (The "Magic" Layer)
-**Goal**: Replace manual Excel tracking.
-#### [NEW] [Expiry Worker](file:///src/workers/expiry-check.ts)
-- Cron job (Midnight UTC): Find `Passport` where `expiryDate` = Today + [180, 90, 30, 7] days.
-- Add Job to Queue: `send-notification`.
-#### [NEW] [WhatsApp Service](file:///src/core/services/whatsapp.ts)
-- Integration with Evolution API.
-- Template: "Hi {name}, your passport expires on {date}. Click here to renew."
-
-### Phase 6: Dashboard & Analytics
-**Goal**: Executive overview.
-#### [NEW] [Dashboard Page](file:///src/app/(dashboard)/page.tsx)
-- Recharts implementation:
-    - `ExpiryBarChart`: Upcoming expiries by month.
-    - `PipelinePieChart`: Applications by status.
-- Widgets: "Urgent Actions" list.
+#### [MODIFY] [docker-compose.yml](file:///c:/Docker%20Hosted/snapimmi/docker-compose.yml)
+- **Next.js Service (`nextjs-app` / `visa_saas_app`)**:
+    - Remove `target: deps` (Build full production image).
+    - Remove bind mounts (code is baked into image).
+    - Remove `command` override (use Dockerfile's `scan` or default CMD).
+    - Set `DATABASE_URL` to point to the docker container `visa_saas_db`.
+- **Nginx Service**:
+    - Add `nginx` service mounting the new config.
+- **Cloudflared Service**:
+    - Point to `nginx` instead of the nextjs app directly.
+    - Ensure `depends_on` Nginx.
 
 ## Verification Plan
 
-### Automated Tests
-- **Unit**: Zod Schema validation tests.
-- **E2E**: Playwright flow: Login -> Add Customer -> Upload Doc -> Check Dashboard.
-
 ### Manual Verification
-- **Multi-tenancy**: Create 2 Firms (Firm A, Firm B). Login as A, try to fetch B's customer ID via API.
-- **Expiry**: Manually set a passport expiry to "Tomorrow", run the worker, verify email/WhatsApp received.
-- **Performance**: Upload 50MB file, verify loading state and final storage.
+1.  **Local Dev**: 
+    - User runs `cd code` -> `pnpm dev`.
+    - Verifies app connects to local Windows Postgres (User ensures `code/.env` points to `localhost`).
+2.  **Server Mode**:
+    - Run `docker-compose up -d --build`.
+    - Verify all containers (App, DB, Redis, MinIO, Mailpit, Nginx, Tunnel) are running.
+    - Verify app is accessible via the Cloudflare Tunnel domain (`si.snapdecode.in`).

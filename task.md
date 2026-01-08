@@ -4,12 +4,16 @@
     - [x] Initialize Next.js 15 Monorepo with Turbo/Nx (or standard repo structure as per preference) <!-- id: 1 -->
     - [x] Configure Docker Compose (Postgres, Redis, MinIO/Local Storage) <!-- id: 2 -->
     - [x] Setup Prisma Schema & Migrations (V2.1 Optimized) <!-- id: 3 -->
-    - [/] Implement Multi-tenant Authentication (Firm + User + Role Guards) <!-- id: 4 -->
-- [ ] **Phase 2: Core CRM (Customers & Families)** <!-- id: 5 -->
-    - [ ] Create `features/customers` structure <!-- id: 6 -->
-    - [ ] Build Customer List Table (Serverside Pagination + Filters) <!-- id: 7 -->
-    - [ ] Build "Add Customer" Wizzard (Basic -> Passport -> Family) <!-- id: 8 -->
-    - [ ] Implement Family Grouping Logic <!-- id: 9 -->
+    - [x] Implement Multi-tenant Authentication (Firm + User + Role Guards) <!-- id: 4 -->
+        - [x] Install Dependencies (NextAuth, Bcrypt, Zod) <!-- id: 27 -->
+        - [x] Configure NextAuth (src/auth.ts) <!-- id: 28 -->
+        - [x] Implement Middleware for Tenant Isolation <!-- id: 29 -->
+        - [x] Build Login Page <!-- id: 30 -->
+- [/] **Phase 2: Core CRM (Customers & Families)** <!-- id: 5 -->
+    - [x] Create `features/customers` structure <!-- id: 6 -->
+    - [x] Build Customer List Table (Serverside Pagination + Filters) <!-- id: 7 -->
+    - [x] Build "Add Customer" Wizzard (Basic -> Passport -> Family) <!-- id: 8 -->
+    - [x] Implement Family Grouping Logic <!-- id: 9 -->
 - [ ] **Phase 3: Document Intelligence** <!-- id: 10 -->
     - [ ] Implement File Upload Component (Drag & Drop) <!-- id: 11 -->
     - [ ] Create Document Vault UI (Grid/List View) <!-- id: 12 -->
