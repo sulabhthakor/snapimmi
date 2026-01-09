@@ -1,88 +1,103 @@
-# Shared Hosting Guide: Snapimmi Integration
+# Shared Hosting Guide: Managing Multiple Apps
 
-This document outlines how `snapimmi` co-exists with other projects (like `evolution-api`, `localmarketpwa`, `n8n`) on the same host machine.
+**For Server Administrators**
 
-## 1. Directory Structure
-All projects are organized as sibling directories under `C:\Docker Hosted\`:
+This guide explains how to host multiple applications (like `localmarketpwa` and `snapimmi`) on the **same server** (your Windows PC using Docker) without them crashing or conflicting with each other.
 
-```
-C:\Docker Hosted\
-├── snapimmi/              # Visa SaaS
-├── localmarketpwa/        # E-commerce PWA
-├── evolution-api/         # WhatsApp API
-└── n8n/                   # Workflow Automation
-```
+---
 
-## 2. Port Allocation Strategy
+## 1. The Golden Rule: Unique Ports
 
-To avoid "Port Already in Use" errors when running multiple projects simultaneously, `snapimmi` uses the following unique host ports:
+Every application needs specific "Ports" to talk to the world. If two apps try to use the same port, one will fail.
+We assign **Unique Ports** to every project.
 
-| Service | Container Port | **Host Port (Snapimmi)** | Standard/Other Projects |
-| :--- | :--- | :--- | :--- |
-| **PostgreSQL** | 5432 | **5434** | 5432 (Local), 5433 (Ev. API?) |
-| **Redis** | 6379 | **6380** | 6379 (Standard) |
-| **MinIO API** | 9000 | **9002** | 9000 |
-| **MinIO Console**| 9001 | **9003** | 9001 |
-| **Mailpit SMTP** | 1025 | **1026** | 1025 |
-| **Mailpit UI** | 8025 | **8026** | 8025 |
-| **Next.js** | 3000 | **Not Exposed** | Exposed via Nginx/Tunnel |
-| **Nginx** | 80 | **Not Exposed** | Exposed via Tunnel |
+### Assigned Port Registry
 
-*Note: Services inside the Docker network (`visa-network`) still communicate using standard ports (e.g., App talks to Postgres on port 5432).*
+| Project Name | Feature | Internal Port | **External Host Port** (Assigned) | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **LocalMarketPWA** | Web App (Next.js) | 3000 | **3000** | Default |
+| | Database (Postgres) | 5432 | **5432** | Default |
+| | Nginx (Proxy) | 80 | **80** | Accessible via `localhost` |
+| | Cloudflare | - | - | Tunnel ID: `localmarket` |
+| | | | | |
+| **SnapImmi** | Web App (Next.js) | 3000 | **3002** | Changed to avoid conflict |
+| | Database (Postgres) | 5432 | **5434** | Changed to avoid conflict |
+| | Redis | 6379 | **6381** | |
+| | MinIO API | 9000 | **9002** | |
+| | MinIO Console | 9001 | **9003** | |
+| | Mailpit UI | 8025 | **8026** | |
+| | Nginx (Proxy) | 80 | **8081** | Accessible via `localhost:8081` |
+| | Cloudflare | - | - | Tunnel ID: `visa_saas` |
 
-## 3. Network Isolation
+---
 
-`snapimmi` uses its own dedicated bridge network:
-```yaml
-networks:
-  visa-network:
-    driver: bridge
-```
-This ensures complete isolation from other projects. Containers in `snapimmi` cannot directly talk to containers in `localmarketpwa` unless joined to a shared network (which is not currently configured).
+## 2. Managing Docker Containers
 
-## 4. Cloudflare Tunnel Management
+You can run both projects simultaneously. Docker handles the isolation.
 
-Each project maintains its own dedicated `cloudflared` container and tunnel configuration.
--   **Hostname**: `si.snapdecode.in`
--   **Config Location**: `snapimmi/cloudflared/config.yml`
--   **Credential Location**: `snapimmi/cloudflared/[ID].json`
-
-This descentralized approach means you can start/stop `snapimmi` independently without affecting the routing of other domains.
-
-## 5. Operational Commands
-
-Here are the specific commands to manage `snapimmi` without disturbing your other running projects.
-
-### 5.1 Start / Update Project
-*   **Where**: Open your terminal in the **root** `snapimmi` directory.
-    *   Example: `cd "c:\Docker Hosted\snapimmi"`
-*   **Command**:
+### Starting Projects
+*   To start **LocalMarketPWA**:
     ```powershell
-    docker-compose up -d --build
+    cd C:\Projects\localmarketpwa
+    docker-compose up -d
     ```
-*   **What it does**:
-    1.  Rebuilds the images if you changed any code.
-    2.  Starts the `snapimmi` containers (App, Postgres, Redis, etc.) in the background.
-    3.  **Crucially**, it does *not* touch `evolution-api` or `localmarketpwa` containers.
-
-### 5.2 Stop Project
-*   **Where**: Inside `snapimmi` root directory.
-*   **Command**:
+*   To start **SnapImmi**:
     ```powershell
-    docker-compose down
+    cd C:\Projects\snapimmi
+    docker-compose up -d
     ```
-*   **What it does**:
-    1.  Stops and removes only the containers defined in `snapimmi/docker-compose.yml`.
-    2.  Frees up the ports (5434, 6380, etc.).
-    3.  Your other projects continue running uninterrupted.
 
-### 5.3 View Logs
-*   **Where**: Inside `snapimmi` root directory.
-*   **Command**:
+### Checking Status
+Run this command to see ALL running containers across all projects:
+```powershell
+docker ps
+```
+You should see a list of containers. Check the **PORTS** column to verify they match the registry above.
+
+### Stopping Projects
+*   To stop **LocalMarketPWA**:
     ```powershell
-    docker-compose logs -f
+    cd C:\Projects\localmarketpwa
+    docker-compose stop
     ```
-*   **What it does**:
-    1.  Streams the live output from all `snapimmi` containers.
-    2.  Useful for debugging startup errors or checking if the database is ready.
-    3.  Press `Ctrl+C` to exit the log view (this will **not** stop the containers).
+    *(Use `down` instead of `stop` if you want to remove the containers completely)*
+
+---
+
+## 3. Cloudflare Tunnels (Remote Access)
+
+Each project has its own Tunnel container. This allows you to access them from the internet via Subdomains.
+
+*   **LocalMarketPWA**: `https://lm.snapdecode.in` -> Points to `localmarket` container.
+*   **SnapImmi**: `https://si.snapdecode.in` -> Points to `visa_saas` container.
+
+**Important**:
+Ensure your `config.yml` in each project's `cloudflared` folder points to the correct internal service:
+*   LocalMarket: `service: http://localmarket-nginx:80`
+*   SnapImmi: `service: http://nginx:80` (Internal Docker network name for that project's nginx).
+
+---
+
+## 4. Maintenance & Backups
+
+### Database Backups (Postgres)
+Since each project has its own Postgres container, you back them up separately.
+
+**Command to Backup SnapImmi DB**:
+```powershell
+docker exec -t visa_saas_db pg_dumpall -c -U postgres > snapimmi_backup.sql
+```
+
+**Command to Backup LocalMarket DB**:
+```powershell
+docker exec -t localmarketpwa-postgres-1 pg_dumpall -c -U postgres > localmarket_backup.sql
+```
+
+---
+
+## 5. Adding a New Project?
+If you add a 3rd project (e.g. `NewApp`), follow these rules:
+1.  **App Port**: Assign `3003`.
+2.  **DB Port**: Assign `5435`.
+3.  **Nginx Port**: Assign `8082`.
+4.  **Update this file**: Add the new ports to the Registry table above so you don't forget!

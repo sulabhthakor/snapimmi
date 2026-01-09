@@ -1,15 +1,20 @@
 
+
 FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat openssl ca-certificates
+
+# Enable corepack for pnpm support
+RUN corepack enable
 
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY code/package.json code/package-lock.json* ./
-RUN npm ci
+COPY code/package.json code/pnpm-lock.yaml* ./
+RUN pnpm i --frozen-lockfile
+
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -24,9 +29,9 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 # Dummy DATABASE_URL to satisfy Prisma/Next.js build time requirements
 ENV DATABASE_URL="postgresql://postgres:password@localhost:5432/visa_saas"
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
-RUN npm run build
+RUN pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner

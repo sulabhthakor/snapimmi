@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FileText, Settings, LogOut, FolderClosed } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -14,6 +15,21 @@ const navigation = [
 
 export function Sidebar({ firmId }: { firmId: string }) {
     const pathname = usePathname();
+
+    const handleSignOut = async () => {
+        // Clear all browser storage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Clear all cookies accessible via JS
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c
+                .replace(/^ +/, "")
+                .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        await signOut({ callbackUrl: '/login' });
+    };
 
     return (
         <div className="hidden border-r bg-gray-900 text-white lg:block lg:w-64 lg:fixed lg:inset-y-0">
@@ -52,7 +68,10 @@ export function Sidebar({ firmId }: { firmId: string }) {
                 })}
             </nav>
             <div className="p-4 border-t border-gray-800">
-                <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <button
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+                >
                     <LogOut className="h-5 w-5" />
                     Sign Out
                 </button>

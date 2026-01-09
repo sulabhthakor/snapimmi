@@ -1,132 +1,172 @@
 # Deployment Guide: Snapimmi (Visa SaaS)
 
-This guide details how to deploy the **Snapimmi** application in **Hybrid Mode**, allowing you to develop locally without Docker while keeping a production-ready Docker environment for deployment.
+**For Freshers & Developers**
 
-**Latest Update**: The project now supports a **Hybrid Workflow**:
-1.  **Local Dev**: Runs on host machine (Windows) using local PostgreSQL.
-2.  **Server Prod**: Runs in Docker containers using isolated PostgreSQL.
+This guide explains exactly how to run the **Snapimmi** project in two different modes:
+1.  **Local Development (Laptop)**: For coding, testing, and making changes.
+2.  **Production Hosting (Server/PC)**: For running the live application using Docker.
 
 ---
 
-## 1. Local Development (Hybrid Workflow)
+## 1. Local Development (Laptop)
 
-Use this mode for active development (`coding`, `UI changes`). It uses your Windows tools directly for maximum speed and keeps Docker for production-checks only.
+**Goal**: Run the app on your Windows laptop, using your local PostgreSQL database.
 
-### 1.1 Prerequisites
--   **Node.js** (v18+) and **pnpm** installed on Windows.
--   **PostgreSQL** Service installed on Windows.
-    -   Port: `5432` (Default)
-    -   User: `postgres`
-    -   Password: `root` (Updated to match your setup)
-    -   Database: `visa_saas`
+### Prerequisites (Install these first)
+1.  **Node.js (v20 or v22)**: Download from [nodejs.org](https://nodejs.org/).
+2.  **Git**: Download from [git-scm.com](https://git-scm.com/).
+3.  **PostgreSQL**: Download and install PostgreSQL for Windows.
+    *   **Important**: During installation, set the password to `root` (or remember what you set).
+    *   Default port is `5432`.
+4.  **pnpm**: Open PowerShell and run:
+    ```powershell
+    npm install -g pnpm
+    ```
 
-### 1.2 Setup
-1.  **Start Database**:
-    Ensure your local PostgreSQL service is running on Windows.
+### Step-by-Step Setup
 
-2.  **Install Dependencies**:
-    *   **Where**: Open your terminal in the `snapimmi\code` directory.
-        *   Example: `cd "c:\Docker Hosted\snapimmi\code"`
-    *   **Command**:
-        ```powershell
-        pnpm install
-        # or
-        npm install
-        ```
-    *   **What it does**: Downloads and installs all the necessary project dependencies (libraries like React, Next.js, etc.) listed in `package.json` into the `node_modules` folder.
+#### 1. Get the Code
+*   **Where**: Open **PowerShell** or **VS Code Terminal**.
+*   **Command**:
+    ```powershell
+    # Go to your projects folder
+    cd C:\Projects
+    
+    # Clone the repository
+    git clone https://github.com/sulabhthakor/snapimmi.git
+    
+    # Go into the code folder (IMPORTANT: All dev work happens here)
+    cd snapimmi\code
+    ```
 
-3.  **Environment Variables**:
-    The `.env` file in `snapimmi\code` is pre-configured for your local setup:
+#### 2. Install Dependencies
+*   **Where**: Inside `snapimmi\code`.
+*   **Command**:
+    ```powershell
+    pnpm install
+    ```
+*   **What it does**: Downloads all the libraries required for the project.
+
+#### 3. Configure Database Connection (.env)
+*   **Where**: Inside `snapimmi\code`.
+*   **Action**: Create a new file named `.env`.
+*   **Content**: Paste the following configuration (Update credentials if your Postgres password isn't `root`):
     ```ini
-    # Connects to localhost:5432 (Windows Postgres)
+    # Connect to your local Windows Postgres
+    # Format: postgresql://USER:PASSWORD@HOST:PORT/DB_NAME
     DATABASE_URL="postgresql://postgres:root@localhost:5432/visa_saas?schema=public"
+
+    # Authentication Settings (Required for NextAuth)
+    AUTH_TRUST_HOST=true
+    AUTH_URL=http://localhost:3002
+    AUTH_SECRET=dev-secret-key-123
     ```
 
-4.  **Initialize Database**:
-    *   **Where**: Run closer to `package.json` inside `snapimmi\code`.
-    *   **Command**:
-        ```powershell
-        npx prisma db push
-        ```
-    *   **What it does**: Connects to your local Postgres database (`visa_saas`), reads the `schema.prisma` file, and creates/updates the tables to match your code.
-    *   **Optional Seed**:
-        ```powershell
-        npx prisma db seed
-        ```
-        *   **What it does**: Populates the database with initial dummy data (e.g., default admin user, categories) so you don't start with an empty app.
+#### 4. Setup the Database
+*   **Where**: Inside `snapimmi\code`.
+*   **Command 1 (Create DB & Tables)**:
+    ```powershell
+    pnpm exec prisma db push
+    ```
+    *   *What it does*: Creates the `visa_saas` database in your local Postgres and creates all the tables (User, Firm, etc.).
+    
+*   **Command 2 (Generate Client)**:
+    ```powershell
+    pnpm exec prisma generate
+    ```
+    *   *What it does*: Creates the type-safe database client for the code to use.
 
-5.  **Run Application**:
-    *   **Where**: Inside `snapimmi\code`.
-    *   **Command**:
-        ```powershell
-        pnpm dev
-        ```
-    *   **What it does**: Starts the local development server. It compiles the project and makes it accessible at `http://localhost:3002`. It watches for file changes and updates the browser automatically.
+*   **Command 3 (Seed Data - Optional)**:
+    ```powershell
+    pnpm exec prisma db seed
+    ```
+    *   *What it does*: Fills the database with dummy users (Admin, Agent) so you can log in immediately.
+
+#### 5. Run the App
+*   **Where**: Inside `snapimmi\code`.
+*   **Command**:
+    ```powershell
+    pnpm dev
+    ```
+*   **Result**: The app will start. Open your browser and go to `http://localhost:3002`.
 
 ---
 
-## 2. Server Deployment (Docker)
+## 2. Production Hosting (Server/PC)
 
-Use this mode to host the application as a production server. This isolates the environment and exposes it via Cloudflare Tunnel.
+**Goal**: Host the application permanently on a server using Docker. This isolates the app so it doesn't mess with your server's settings.
 
-### 2.1 Dependencies
--   Docker Desktop (Running)
--   Cloudflare Tunnel credentials (`config.yml` and `.json` file).
+### Prerequisites
+1.  **Docker Desktop**: Install and ensure it is running (Green whale icon).
+2.  **Git**: Installed.
 
-### 2.2 Configuration
+### Step-by-Step Deployment
 
-#### Docker Ports (Shared Hosting Friendly)
-To avoid conflicts with other projects (like `evolution-api` or `localmarket`), the following host ports are used:
--   **Postgres**: `5434` (Maps to internal 5432)
--   **Redis**: `6380` (Maps to internal 6379)
--   **MinIO**: `9002` (API), `9003` (Console)
--   **Mailpit**: `8026` (UI), `1026` (SMTP)
-
-#### Cloudflare Tunnel
-1.  Place your tunnel JSON credential file in `snapimmi/cloudflared/`.
-2.  Update `snapimmi/cloudflared/config.yml`:
-    ```yaml
-    tunnel: YOUR_TUNNEL_ID
-    credentials-file: /etc/cloudflared/YOUR_TUNNEL_ID.json
-
-    ingress:
-      - hostname: si.snapdecode.in
-        # Points to the nginx service inside Docker
-        service: http://nginx:80
-      - service: http_status:404
+#### 1. Fetch Latest Code
+*   **Where**: Open PowerShell on your Server PC.
+*   **Command**:
+    ```powershell
+    cd C:\Projects\snapimmi
+    git pull
     ```
 
-### 2.3 Launching
-*   **Where**: Open your terminal in the **root** `snapimmi` directory (where `docker-compose.yml` is located).
-    *   Example: `cd "c:\Docker Hosted\snapimmi"`
+#### 2. Configure Cloudflare Tunnel (One Time)
+*   **Where**: Inside `snapimmi\cloudflared` folder.
+*   **Action**:
+    1.  Place your `credentials.json` file here.
+    2.  Create/Edit `config.yml`:
+        ```yaml
+        tunnel: YOUR-TUNNEL-ID-HERE
+        credentials-file: /etc/cloudflared/YOUR-TUNNEL-ID-HERE.json
+        ingress:
+          - hostname: si.snapdecode.in
+            service: http://nginx:80
+          - service: http_status:404
+        ```
+
+#### 3. Start the Server
+*   **Where**: Into the **root project folder** (`snapimmi`), NOT `code`.
 *   **Command**:
     ```powershell
     docker-compose up -d --build
     ```
 *   **What it does**:
-    1.  **Builds**: Creates the Docker images for your specialized services (like the Next.js app) based on the `Dockerfile`.
-    2.  **Starts**: Launches all containers defined in `docker-compose.yml` (Postgres, Redis, App, Nginx, Tunnel, etc.).
-    3.  **Detaches** (`-d`): Runs the containers in the background so they keep running even if you close the terminal.
-    4.  **Networking**: Connects all containers on a private network (`visa-network`) so they can communicate securely.
+    *   Builds the application container.
+    *   Starts Postgres (Port 5434), Redis (Port 6381), MinIO (Port 9002), and Nginx (Port 8081).
+    *   Connects the Cloudflare tunnel.
 
-*Note: The `docker-compose.yml` automatically overrides the `DATABASE_URL` to point to the secure Dockerized database, ignoring your local `.env` settings.*
-
-### 2.4 Architecture
--   **Nginx**: Reverse proxy listening on internal port 80.
--   **Next.js**: Production build.
--   **Postgres**: Dockerized database (Isolated from your local Windows DB).
--   **Tunnel**: Outbound connection to Cloudflare.
+#### 4. Access the App
+*   **Remote**: `https://si.snapdecode.in`
+*   **Local**: `http://localhost:3002` (Direct App) or `http://localhost:8081` (Nginx Proxy).
 
 ---
 
-## 3. Workflow Summary
+## Troubleshooting / Common Issues
 
-| Task | Environment | Command | Database Used |
-| :--- | :--- | :--- | :--- |
-| **Coding / Debugging** | Local (Windows) | `pnpm dev` | Local Windows Postgres (`localhost:5432`) |
-| **Production Test** | Docker | `docker-compose up` | Docker Postgres (`postgres:5432`) |
-| **Data Reset** | Local | `npx prisma migrate reset` | Local Windows Postgres |
-| **Data Reset** | Docker | `docker-compose down -v` | Docker Postgres |
+### 1. "Failed to load external module @prisma/client"
+*   **Cause**: The database client wasn't generated correctly or environment/version mismatch.
+*   **Fix**:
+    ```powershell
+    cd code
+    pnpm exec prisma generate
+    ```
 
-> [!IMPORTANT]
-> **Data Separation**: Your Local DB and Docker DB are completely separate. Creating a user in `pnpm dev` will NOT show up in the Docker version, and vice-versa.
+### 2. "Invalid character" during Prisma Generate
+*   **Cause**: Your `.env` file might have hidden characters if created via PowerShell `echo`.
+*   **Fix**: Open `.env` in VS Code or Notepad, ensure it looks clean, save it with UTF-8 encoding.
+
+### 3. Port Conflicts (EADDRINUSE)
+*   **Cause**: The app is already running.
+*   **Fix**:
+    1.  Find what's running on port 3002:
+        ```powershell
+        netstat -ano | findstr :3002
+        ```
+    2.  Kill the process (Replace PID with the number from above):
+        ```powershell
+        taskkill /PID <PID> /F
+        ```
+
+### 4. Database Connection Error
+*   **Cause**: Postgres service is not running OR credentials in `.env` are wrong.
+*   **Fix**: Check `services.msc` to see if `postgresql-x64` is running. Check your password in `.env`.

@@ -42,14 +42,14 @@ export function UserMenu({ user }: { user: any }) {
 
                 <div className="p-1">
                     <a
-                        href="/profile"
+                        href={`/dashboard/${user.firmId}/settings`}
                         className="flex items-center gap-x-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         <User className="h-4 w-4 text-gray-500" />
                         My Profile
                     </a>
                     <a
-                        href={`/${user.firmId}`}
+                        href={`/dashboard/${user.firmId}`}
                         className="flex items-center gap-x-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         <LayoutDashboard className="h-4 w-4 text-gray-500" />
@@ -59,7 +59,16 @@ export function UserMenu({ user }: { user: any }) {
 
                 <div className="p-1 border-t border-gray-50">
                     <button
-                        onClick={() => signOut()}
+                        onClick={async () => {
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            document.cookie.split(";").forEach((c) => {
+                                document.cookie = c
+                                    .replace(/^ +/, "")
+                                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                            });
+                            await signOut({ callbackUrl: '/login' });
+                        }}
                         className="flex w-full items-center gap-x-3 px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                     >
                         <LogOut className="h-4 w-4" />
