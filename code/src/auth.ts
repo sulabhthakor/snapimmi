@@ -1,13 +1,15 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
-import db from "@/lib/db"
+
 import bcrypt from "bcryptjs"
 import { authConfig } from "./auth.config"
 
+import { prisma } from "@/lib/prisma";
+
 async function getUser(email: string) {
     try {
-        const user = await db.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { email },
             include: { firm: true }
         });

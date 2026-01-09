@@ -3,9 +3,9 @@ import { z } from "zod";
 export const CustomerSchema = z.object({
     id: z.string().optional(),
     fullName: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email().optional().or(z.literal("")),
-    phone: z.string().min(10, "Phone number is required"),
-    passportMeta: z.string().optional(),
+    email: z.string().email().optional().or(z.literal("")).nullable(),
+    phone: z.string().nullable().optional(),
+    passportMeta: z.string().nullable().optional(),
     isFamilyHead: z.boolean().default(false),
     firmId: z.string().optional(),
 });

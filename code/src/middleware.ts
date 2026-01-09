@@ -10,9 +10,14 @@ export default auth((req) => {
     const isAuthRoute = nextUrl.pathname.startsWith("/api/auth") || nextUrl.pathname === "/login"
     const isDashboardRoute = nextUrl.pathname.startsWith("/dashboard")
 
+    console.log(`MW: Path=${nextUrl.pathname}, LoggedIn=${isLoggedIn}, FirmID=${(req.auth?.user as any)?.firmId}`)
+
     if (isAuthRoute) {
         if (isLoggedIn && nextUrl.pathname === "/login") {
             const firmId = (req.auth?.user as any).firmId
+            if (!firmId) {
+                return NextResponse.redirect(new URL("/dashboard/admin", nextUrl))
+            }
             return NextResponse.redirect(new URL(`/dashboard/${firmId}`, nextUrl))
         }
         return NextResponse.next()
@@ -25,6 +30,10 @@ export default auth((req) => {
 
         // Tenant Isolation
         const firmId = (req.auth?.user as any).firmId
+
+        // If admin (no firmId), allow access
+        if (!firmId) return NextResponse.next()
+
         // Extract firmId from URL: /dashboard/[firmId]/...
         const pathFirmId = nextUrl.pathname.split("/")[2]
 

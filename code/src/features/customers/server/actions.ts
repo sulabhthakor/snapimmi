@@ -1,13 +1,13 @@
 'use server';
 
-import db from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { CustomerFilters, CreateCustomerRequestSchema } from "../types";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
-// Infer TransactionClient type directly from the db instance to avoid import issues
-type TransactionClient = Parameters<Parameters<typeof db['$transaction']>[0]>[0];
+type TransactionClient = Prisma.TransactionClient;
 
 export async function getCustomers(filters: CustomerFilters) {
     const session = await auth();
@@ -35,7 +35,7 @@ export async function getCustomers(filters: CustomerFilters) {
     // TODO: Add status filtering when status is added to Customer model or derived
 
     const [data, total] = await Promise.all([
-        db.customer.findMany({
+        prisma.customer.findMany({
             where,
             skip,
             take: limit,
@@ -46,7 +46,7 @@ export async function getCustomers(filters: CustomerFilters) {
                 }
             }
         }),
-        db.customer.count({ where })
+        prisma.customer.count({ where })
     ]);
 
     return { data, total, pageCount: Math.ceil(total / limit) };
@@ -69,7 +69,7 @@ export async function createCustomer(data: z.infer<typeof CreateCustomerRequestS
     const { fullName, email, phone, passport, isFamilyHead, existingFamilyId, newFamilyName } = validation.data;
 
     try {
-        const result = await db.$transaction(async (tx: TransactionClient) => {
+        const result = await prisma.$transaction(async (tx: TransactionClient) => {
             let familyGroupId = existingFamilyId;
 
             // 1. Create Family Group if Head

@@ -1,10 +1,10 @@
 
 FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat openssl ca-certificates
 
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -22,7 +22,8 @@ COPY code/ .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# If you use Prisma, you might need to generate the client here
+# Dummy DATABASE_URL to satisfy Prisma/Next.js build time requirements
+ENV DATABASE_URL="postgresql://postgres:password@localhost:5432/visa_saas"
 RUN npx prisma generate
 
 RUN npm run build
@@ -48,6 +49,7 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY code/prisma ./prisma
 
 USER nextjs
 

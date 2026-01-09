@@ -1,0 +1,63 @@
+﻿
+> web@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\Sulabh 
+Thakor\AppData\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá The "mid 
+   dle...leware-to-proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.5s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+Error [PrismaClientInitializationError]: `PrismaClient` 
+needs to be constructed with a non-empty, valid 
+`PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at instantiateModule (C:\Docker Hosted\snapimmi\code\.
+next\server\chunks\[turbopack]_runtime.js:740:9)
+    at instantiateRuntimeModule (C:\Docker Hosted\snapimmi
+\code\.next\server\chunks\[turbopack]_runtime.js:768:12)
+    at getOrInstantiateRuntimeModule (C:\Docker Hosted\sna
+pimmi\code\.next\server\chunks\[turbopack]_runtime.js:781:
+12)
+    at Object.m (C:\Docker Hosted\snapimmi\code\.next\serv
+er\chunks\[turbopack]_runtime.js:790:18)
+    at Object.<anonymous> (C:\Docker Hosted\snapimmi\code\
+.next\server\app\api\auth\[...nextauth]\route.js:6:3) {
+  clientVersion: '7.2.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+> Build error occurred
+Error: Failed to collect page data for 
+/api/auth/[...nextauth]
+    at ignore-listed frames {
+  type: 'Error'
+}

@@ -14,13 +14,13 @@
     - [x] Build Customer List Table (Serverside Pagination + Filters) <!-- id: 7 -->
     - [x] Build "Add Customer" Wizzard (Basic -> Passport -> Family) <!-- id: 8 -->
     - [x] Implement Family Grouping Logic <!-- id: 9 -->
-- [ ] **Phase 3: Document Intelligence** <!-- id: 10 -->
+- [/] **Phase 3: Document Intelligence** <!-- id: 10 -->
     - [ ] Implement File Upload Component (Drag & Drop) <!-- id: 11 -->
-    - [ ] Create Document Vault UI (Grid/List View) <!-- id: 12 -->
+    - [x] Create Document Vault UI (Grid/List View) <!-- id: 12 -->
     - [ ] Setup Secure Signed URL Access for files <!-- id: 13 -->
-- [ ] **Phase 4: Application Pipeline (Kanban)** <!-- id: 14 -->
-    - [ ] Build Kanban Board UI (React DND) <!-- id: 15 -->
-    - [ ] Implement Status Change Server Actions <!-- id: 16 -->
+- [x] **Phase 4: Application Pipeline (Kanban)** <!-- id: 14 -->
+    - [x] Build Kanban Board UI (React DND) <!-- id: 15 -->
+    - [x] Implement Status Change Server Actions <!-- id: 16 -->
 - [ ] **Phase 5: Automation Engine** <!-- id: 17 -->
     - [ ] Setup BullMQ Worker for Expiry Checks <!-- id: 18 -->
     - [ ] Integrate Email Provider (Resend/Nodemailer) <!-- id: 19 -->
@@ -30,4 +30,4 @@
     - [ ] Build Global Search (Cmd+K) <!-- id: 23 -->
 - [ ] **Phase 7: Production Readiness** <!-- id: 24 -->
     - [ ] Security Audit (Rate Limiting, Headers) <!-- id: 25 -->
-    - [ ] Final Deployment Walkthrough <!-- id: 26 -->
+    - [/] Final Deployment Walkthrough <!-- id: 26 -->

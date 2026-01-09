@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: visa_saas
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -21,7 +21,7 @@ services:
     image: redis:7-alpine
     container_name: visa_saas_redis
     ports:
-      - "6379:6379"
+      - "6381:6379" # Changed to 6381 to avoid conflict with evolution-api
     volumes:
       - redis_data:/data
     networks:
@@ -36,8 +36,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000" # API
-      - "9001:9001" # Console
+      - "9002:9000" # API (Changed to 9002)
+      - "9003:9001" # Console (Changed to 9003)
     volumes:
       - minio_data:/data
     networks:
@@ -48,8 +48,8 @@ services:
     image: axllent/mailpit
     container_name: visa_saas_mailpit
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # UI
+      - "1026:1025" # SMTP (Changed to 1026)
+      - "8026:8025" # UI (Changed to 8026)
     networks:
       - visa-network
 
@@ -59,10 +59,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: visa_saas_app
+    ports:
+      - "3002:3000"
     restart: always
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/visa_saas
       # Add other necessary environment variables here
+      AUTH_TRUST_HOST: "true"
+      AUTH_URL: "https://si.snapdecode.in"
+      AUTH_SECRET: "supersecuresecretthatshouldbechanged" # Added for NextAuth v5
     depends_on:
       - postgres
       - redis
@@ -88,7 +93,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "80:80"
+      - "8081:80"
     restart: always
     depends_on:
       - nextjs-app

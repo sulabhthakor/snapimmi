@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
-import db from "@/lib/db"
+
 
 // Notice we don't import db here for the edge-safe config used by middleware
 // IF we need to use db in authorize, we might need a separate strategy or use the 'authorize' 

@@ -1,0 +1,78 @@
+﻿
+> web@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\Sulabh 
+Thakor\AppData\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá The "mid 
+   dle...leware-to-proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.9s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+Error: Failed to collect configuration for 
+/[firmId]/customers
+    at ignore-listed frames {
+  [cause]: Error [PrismaClientInitializationError]: 
+`PrismaClient` needs to be constructed with a non-empty, 
+valid `PrismaClientOptions`:
+  
+  ```
+  new PrismaClient({
+    ...
+  })
+  ```
+  
+  or
+  
+  ```
+  constructor() {
+    super({ ... });
+  }
+  ```
+            
+      at module evaluation (C:\Docker Hosted\snapimmi\code
+\.next\server\chunks\ssr\_5d5a95b3._.js:1:294)
+      at instantiateModule (C:\Docker Hosted\snapimmi\code
+\.next\server\chunks\ssr\[turbopack]_runtime.js:740:9)
+      at getOrInstantiateModuleFromParent (C:\Docker Hoste
+d\snapimmi\code\.next\server\chunks\ssr\[turbopack]_runtim
+e.js:763:12)
+      at Context.esmImport [as i] (C:\Docker Hosted\snapim
+mi\code\.next\server\chunks\ssr\[turbopack]_runtime.js:228
+:20)
+      at module evaluation (C:\Docker Hosted\snapimmi\code
+\.next\server\chunks\ssr\_4b124194._.js:8:42185)
+      at instantiateModule (C:\Docker Hosted\snapimmi\code
+\.next\server\chunks\ssr\[turbopack]_runtime.js:740:9)
+      at getOrInstantiateModuleFromParent (C:\Docker Hoste
+d\snapimmi\code\.next\server\chunks\ssr\[turbopack]_runtim
+e.js:763:12)
+      at Context.esmImport [as i] (C:\Docker Hosted\snapim
+mi\code\.next\server\chunks\ssr\[turbopack]_runtime.js:228
+:20)
+      at module evaluation (C:\Docker Hosted\snapimmi\code
+\.next\server\chunks\ssr\[root-of-the-server]__70b3c6ff._.
+js:1:1311) {
+    clientVersion: '7.2.0',
+    errorCode: undefined,
+    retryable: undefined
+  }
+}
+
+> Build error occurred
+Error: Failed to collect page data for /[firmId]/customers
+    at ignore-listed frames {
+  type: 'Error'
+}
