@@ -16,6 +16,16 @@ export const PassportSchema = z.object({
     issueDate: z.coerce.date(),
     expiryDate: z.coerce.date(),
     placeOfIssue: z.string().optional(),
+    frontImage: z.string().optional(),
+    backImage: z.string().optional(),
+});
+
+export const VisaSchema = z.object({
+    country: z.string().min(2, "Country is required"),
+    type: z.string().min(2, "Visa Type is required"), // e.g. Student, Work
+    grantDate: z.coerce.date().optional(),
+    expiryDate: z.coerce.date(),
+    fileUrl: z.string().optional(),
 });
 
 export const CreateCustomerRequestSchema = z.object({
@@ -23,13 +33,18 @@ export const CreateCustomerRequestSchema = z.object({
     email: z.string().email().optional().or(z.literal("")),
     phone: z.string().min(10, "Phone number is required"),
     passport: PassportSchema.optional(),
+    visa: VisaSchema.optional(),
 
     // Family Logic
     isFamilyHead: z.boolean().default(false),
     // ID of an existing family group to join
-    existingFamilyId: z.string().optional(),
+    existingFamilyId: z.string().optional().or(z.literal("")),
     // Or, if creating a new family (isFamilyHead=true), we can auto-generate name or ask for it
     newFamilyName: z.string().optional(),
+});
+
+export const UpdateCustomerRequestSchema = CreateCustomerRequestSchema.extend({
+    id: z.string(),
 });
 
 export type Customer = z.infer<typeof CustomerSchema> & {

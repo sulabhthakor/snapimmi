@@ -1,24 +1,35 @@
 import { Suspense } from 'react';
-import { KanbanBoard } from '@/features/applications/components/KanbanBoard';
+import { ApplicationTable } from '@/features/applications/components/ApplicationTable';
 import { getApplications } from '@/features/applications/server/actions';
 
-export default async function ApplicationsPage({ params }: { params: { firmId: string } }) {
-    const applications = await getApplications(params.firmId);
+export default async function ApplicationsPage({
+    params,
+    searchParams
+}: {
+    params: Promise<{ firmId: string }>;
+    searchParams: Promise<{ customerId?: string; search?: string; status?: string; priority?: string }>;
+}) {
+    const { firmId } = await params;
+    const { customerId, search, status, priority } = await searchParams;
+
+    // Initial fetch with URL params
+    const initialFilters = { customerId, search, status, priority };
+    const applications = await getApplications(firmId, initialFilters);
 
     return (
-        <div className="h-[calc(100vh-100px)] flex flex-col">
-            <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col space-y-6">
+            <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Application Pipeline</h1>
-                    <p className="text-gray-500">Track and manage visa applications across stages.</p>
+                    <p className="text-gray-600 mt-1">Track and manage visa applications across stages.</p>
                 </div>
-                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 shadow-md">
+                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all">
                     + New Application
                 </button>
             </div>
 
-            <Suspense fallback={<div>Loading board...</div>}>
-                <KanbanBoard initialData={applications} />
+            <Suspense fallback={<div className="p-4 text-center text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">Loading applications...</div>}>
+                <ApplicationTable initialData={applications} firmId={firmId} />
             </Suspense>
         </div>
     );

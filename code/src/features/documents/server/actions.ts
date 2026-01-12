@@ -30,13 +30,34 @@ export async function getDocuments(firmId: string) {
     }));
 }
 
-export async function uploadDocument(formData: FormData) {
-    // In a real implementation: Upload to S3/MinIO, then save to DB.
-    // For now we just mock the DB entry creation with a dummy URL to allow UI testing.
-    // We'll need a Customer ID to attach it to. 
-    // Since this action is generic, we'll pick the first customer of the firm for demo purposes
-    // Or just skip DB insert since we don't have customer context in this payload yet.
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
-    return { success: true };
+export async function uploadFile(formData: FormData) {
+    const file = formData.get('file') as File;
+    if (!file) {
+        return { success: false, error: "No file uploaded" };
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Create unique filename
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, ''); // Sanitize
+    const filename = `${uniqueSuffix}-${originalName}`;
+
+    // Ensure upload dir exists
+    const uploadDir = join(process.cwd(), 'public', 'uploads');
+    await mkdir(uploadDir, { recursive: true });
+
+    // Write file
+    const filepath = join(uploadDir, filename);
+    await writeFile(filepath, buffer);
+
+    // Return URL relative to public
+    const fileUrl = `/uploads/${filename}`;
+
+    return { success: true, url: fileUrl };
 }
 

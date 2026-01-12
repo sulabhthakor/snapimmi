@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useId } from 'react';
 import {
     DndContext,
     DragOverlay,
@@ -28,6 +28,15 @@ const COLUMNS: ApplicationStatus[] = ['INQUIRY', 'DOC_COLLECTION', 'APPLIED', 'D
 export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const [applications, setApplications] = useState<Application[]>(initialData);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        setApplications(initialData);
+    }, [initialData]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), // Prevent accidental drags
@@ -100,8 +109,11 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
 
     const activeApplication = activeId ? applications.find(x => x.id === activeId) : null;
 
+    const dndContextId = useId();
+
     return (
         <DndContext
+            id={dndContextId}
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
@@ -119,7 +131,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
                 ))}
             </div>
 
-            {createPortal(
+            {mounted && createPortal(
                 <DragOverlay>
                     {activeApplication && <KanbanCard application={activeApplication} />}
                 </DragOverlay>,

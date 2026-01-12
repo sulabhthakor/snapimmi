@@ -11,8 +11,8 @@ export default async function CustomersPage() {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-                    <p className="text-muted-foreground">Manage leads and active clients.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Customers</h1>
+                    <p className="mt-2 text-base text-gray-600">Manage leads and active clients.</p>
                 </div>
             </div>
 

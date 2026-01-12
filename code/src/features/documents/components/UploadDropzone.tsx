@@ -2,48 +2,23 @@
 
 import { useState, useCallback } from 'react';
 import { UploadCloud, File, X, Loader2 } from 'lucide-react';
-import { uploadDocument } from '../server/actions';
+import { uploadFile } from '../server/actions';
 
 export function UploadDropzone({ onClose }: { onClose: () => void }) {
-    const [isDragging, setIsDragging] = useState(false);
-    const [files, setFiles] = useState<File[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleDragOver = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(true);
-    }, []);
-
-    const handleDragLeave = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-    }, []);
-
-    const handleDrop = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            setFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
-        }
-    }, []);
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-        }
-    };
-
-    const removeFile = (index: number) => {
-        setFiles(files.filter((_, i) => i !== index));
-    };
-
+    // ...
     const handleUpload = async () => {
         setIsUploading(true);
         // Simulate upload for each file
         const formData = new FormData();
-        files.forEach(file => formData.append('files', file));
+        files.forEach(file => formData.append('file', file)); // API expects 'file' not 'files' - we need to handle multi-upload properly or loop
 
-        await uploadDocument(formData);
+        // Current uploadFile handles single file. We need to loop here or Update API.
+        // Let's loop for now to fix the build quickly.
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            await uploadFile(formData);
+        }
 
         setIsUploading(false);
         onClose();
@@ -67,8 +42,8 @@ export function UploadDropzone({ onClose }: { onClose: () => void }) {
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${isDragging
-                                ? 'border-blue-500 bg-blue-50/50 scale-[1.02]'
-                                : 'border-gray-200 hover:border-black hover:bg-gray-50'
+                            ? 'border-blue-500 bg-blue-50/50 scale-[1.02]'
+                            : 'border-gray-200 hover:border-black hover:bg-gray-50'
                             }`}
                     >
                         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">

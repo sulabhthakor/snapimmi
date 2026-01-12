@@ -10,7 +10,7 @@ export default async function DocumentsPage({ params }: { params: { firmId: stri
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Documents Vault</h1>
-                    <p className="text-gray-500">Securely store and manage client passports, visas, and IDs.</p>
+                    <p className="text-gray-600 mt-1">Securely store and manage client passports, visas, and IDs.</p>
                 </div>
             </div>
 

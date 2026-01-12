@@ -22,12 +22,15 @@ enum FirmStatus {
 }
 
 enum AppStatus {
-  LEAD
-  DOCS_COLLECTED
+  PENDING
+  DOCUMENTS_COLLECTED
   APPLIED
-  BIOMETRICS
   APPROVED
   REJECTED
+  // Legacy values to support existing data
+  LEAD
+  DOCS_COLLECTED
+  BIOMETRICS
 }
 
 // --- CORE MODELS ---
@@ -130,6 +133,7 @@ model Passport {
   country     String
   issueDate   DateTime
   expiryDate  DateTime
+  placeOfIssue String?
   
   frontImage  String?   // Path to file
   backImage   String?
@@ -171,7 +175,7 @@ model Application {
   
   targetCountry String
   visaType      String
-  status        AppStatus @default(LEAD)
+  status        AppStatus @default(PENDING)
   priority      String    @default("MEDIUM") // LOW, MEDIUM, HIGH
   
   notes       String?   // Changed from @db.Text for broader compatibility, or keep String
