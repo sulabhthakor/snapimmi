@@ -1,15 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import { Document } from '../types';
-import { Search, Grid, List, File, Image as ImageIcon, FileText, MoreVertical, Download, Trash2, Eye, Plus } from 'lucide-react';
+import { Search, Grid, List, File, Image as ImageIcon, FileText, MoreVertical, Download, Trash2, Eye, Plus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { UploadDropzone } from './UploadDropzone';
+import { deleteDocument } from '../server/actions';
+import { toast } from 'sonner';
 
 export function DocumentVault({ documents }: { documents: Document[] }) {
     const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
     const [searchTerm, setSearchTerm] = useState('');
     const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setActiveMenuId(null);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const filteredDocs = documents.filter(doc =>
         doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,6 +47,34 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
         const sizes = ['B', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
+    const handlePreview = (doc: Document) => {
+        window.open(doc.fileUrl, '_blank');
+    };
+
+    const handleDownload = (doc: Document) => {
+        // Create a temporary link to force download
+        const link = document.createElement('a');
+        link.href = doc.fileUrl;
+        link.download = doc.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleDelete = (doc: Document) => {
+        if (confirm('Are you sure you want to delete this document?')) {
+            startTransition(async () => {
+                const result = await deleteDocument(doc.id);
+                if (result.success) {
+                    toast.success('Document deleted');
+                } else {
+                    toast.error('Failed to delete document');
+                }
+                setActiveMenuId(null);
+            });
+        }
     };
 
     return (
@@ -76,18 +122,69 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
             {viewMode === 'GRID' && (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {filteredDocs.map((doc) => (
-                        <div key={doc.id} className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
-                            <div className="aspect-[4/3] bg-gray-50 rounded-lg mb-3 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
-                                {getFileIcon(doc.mimeType)}
+                        <div key={doc.id} className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => handlePreview(doc)}>
+                            <div className="aspect-[4/3] bg-gray-50 rounded-lg mb-3 flex items-center justify-center group-hover:bg-gray-100 transition-colors overflow-hidden relative">
+                                {doc.mimeType.startsWith('image/') ? (
+                                    <>
+                                        <img
+                                            src={doc.fileUrl}
+                                            alt={doc.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+                                                if (fallback) {
+                                                    fallback.classList.remove('hidden');
+                                                    fallback.classList.add('flex');
+                                                }
+                                            }}
+                                        />
+                                        <div className="fallback-icon hidden absolute inset-0 items-center justify-center flex-col text-gray-400 bg-gray-50">
+                                            <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
+                                            <span className="text-[10px]">No Preview</span>
+                                        </div>
+                                    </>
+                                ) : doc.mimeType.includes('pdf') ? (
+                                    <div className="flex flex-col items-center justify-center w-full h-full bg-red-50/50 text-red-500">
+                                        <FileText className="h-10 w-10 mb-2 drop-shadow-sm" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider bg-white/80 px-2 py-0.5 rounded-full shadow-sm">PDF</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center w-full h-full text-blue-500 bg-blue-50/50">
+                                        <File className="h-10 w-10 mb-2 drop-shadow-sm" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider bg-white/80 px-2 py-0.5 rounded-full shadow-sm">FILE</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="font-semibold text-sm text-gray-900 truncate max-w-[120px]" title={doc.name}>{doc.name}</h3>
                                     <p className="text-xs text-gray-500 mt-1">{formatSize(doc.fileSize)}</p>
                                 </div>
-                                <button className="text-gray-400 hover:text-black">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveMenuId(activeMenuId === doc.id ? null : doc.id);
+                                    }}
+                                    className="text-gray-400 hover:text-black p-1 hover:bg-gray-100 rounded"
+                                >
                                     <MoreVertical className="h-4 w-4" />
                                 </button>
+
+                                {/* Dropdown Menu */}
+                                {activeMenuId === doc.id && (
+                                    <div ref={menuRef} className="absolute right-2 top-12 z-10 w-36 bg-white rounded-lg shadow-lg border border-gray-100 py-1 animation-in fade-in zoom-in-95 duration-100" onClick={(e) => e.stopPropagation()}>
+                                        <button onClick={() => handlePreview(doc)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                            <Eye className="h-3 w-3" /> Preview
+                                        </button>
+                                        <button onClick={() => handleDownload(doc)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                            <Download className="h-3 w-3" /> Download
+                                        </button>
+                                        <button onClick={() => handleDelete(doc)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50">
+                                            <Trash2 className="h-3 w-3" /> Delete
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div className="mt-3 text-xs font-medium px-2 py-1 bg-gray-50 inline-block rounded text-gray-600 border border-gray-200">
                                 {doc.category}
@@ -119,7 +216,7 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                             <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
                                                 {getFileIcon(doc.mimeType)}
                                             </div>
-                                            <span className="font-medium text-gray-900">{doc.name}</span>
+                                            <span className="font-medium text-gray-900 cursor-pointer hover:underline" onClick={() => handlePreview(doc)}>{doc.name}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -138,13 +235,13 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-md" title="Preview">
+                                            <button onClick={() => handlePreview(doc)} className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-md" title="Preview">
                                                 <Eye className="h-4 w-4" />
                                             </button>
-                                            <button className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-md" title="Download">
+                                            <button onClick={() => handleDownload(doc)} className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-md" title="Download">
                                                 <Download className="h-4 w-4" />
                                             </button>
-                                            <button className="p-2 text-red-500 hover:bg-red-50 rounded-md" title="Delete">
+                                            <button onClick={() => handleDelete(doc)} className="p-2 text-red-500 hover:bg-red-50 rounded-md" title="Delete">
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
                                         </div>

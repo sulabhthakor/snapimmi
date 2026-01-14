@@ -9,11 +9,12 @@ import { createCustomer } from '../server/actions';
 import { useRouter, useParams } from 'next/navigation';
 import { uploadFile } from '../../documents/server/actions';
 import { User, FileText, Users, CheckCircle2, ChevronRight, Loader2, ArrowLeft, ArrowRight, Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Define schemas
 const Step1Schema = CreateCustomerRequestSchema.pick({ fullName: true, email: true, phone: true });
 const Step2Schema = PassportSchema;
-const Step3Schema = VisaSchema.optional(); // Step 3 is now Visa (optional)
+const Step3Schema = VisaSchema; // Step 3 is Visa
 const Step4Schema = z.object({
     isFamilyHead: z.boolean(),
     existingFamilyId: z.string().optional(),
@@ -58,12 +59,13 @@ export function NewCustomerWizard() {
             if (result.success && result.url) {
                 setFiles(prev => ({ ...prev, [fieldName]: result.url }));
                 form.setValue(formField, result.url);
+                toast.success('File uploaded successfully');
             } else {
-                alert('Upload failed');
+                toast.error('Upload failed');
             }
         } catch (error) {
             console.error(error);
-            alert('Upload error');
+            toast.error('Upload error');
         } finally {
             setIsUploading(prev => ({ ...prev, [fieldName]: false }));
         }
@@ -108,9 +110,10 @@ export function NewCustomerWizard() {
 
             const result = await createCustomer(finalData);
             if (result.success) {
+                toast.success('Customer created successfully');
                 router.push(`/dashboard/${firmId}/customers`);
             } else {
-                alert('Failed to create customer: ' + JSON.stringify(result.error));
+                toast.error('Failed to create customer');
             }
         });
     };

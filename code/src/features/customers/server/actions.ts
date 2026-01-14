@@ -16,7 +16,7 @@ export async function getCustomers(filters: CustomerFilters) {
 
     if (!firmId) return { data: [], total: 0 };
 
-    const { search, page, limit } = filters;
+    const { search, page, limit, status } = filters;
     const skip = (page - 1) * limit;
 
     const where: any = {
@@ -32,7 +32,23 @@ export async function getCustomers(filters: CustomerFilters) {
         ];
     }
 
-    // TODO: Add status filtering when status is added to Customer model or derived
+    if (status === 'ACTIVE') {
+        where.applications = {
+            some: {
+                status: {
+                    not: 'LEAD'
+                }
+            }
+        };
+    } else if (status === 'LEAD') {
+        where.applications = {
+            none: {
+                status: {
+                    not: 'LEAD'
+                }
+            }
+        };
+    }
 
     const [data, total] = await Promise.all([
         prisma.customer.findMany({
@@ -193,7 +209,7 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
         return { success: false, error: validation.error.format() };
     }
 
-    const { id, fullName, email, phone, passport, isFamilyHead, existingFamilyId, newFamilyName } = validation.data;
+    const { id, fullName, email, phone, passport, visa, isFamilyHead, existingFamilyId, newFamilyName } = validation.data;
 
     try {
         const result = await prisma.$transaction(async (tx: TransactionClient) => {
@@ -241,7 +257,9 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
                             country: passport.country,
                             issueDate: passport.issueDate,
                             expiryDate: passport.expiryDate,
-                            placeOfIssue: passport.placeOfIssue
+                            placeOfIssue: passport.placeOfIssue,
+                            frontImage: passport.frontImage,
+                            backImage: passport.backImage
                         }
                     });
                 } else {
@@ -252,7 +270,45 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
                             country: passport.country,
                             issueDate: passport.issueDate,
                             expiryDate: passport.expiryDate,
-                            placeOfIssue: passport.placeOfIssue
+                            placeOfIssue: passport.placeOfIssue,
+                            frontImage: passport.frontImage,
+                            backImage: passport.backImage
+                        }
+                    });
+                }
+            }
+
+            // 4. Upsert Visa
+            if (visa) {
+                // Check for existing active visa for this country/type
+                const existingVisa = await tx.visa.findFirst({
+                    where: {
+                        customerId: id,
+                        country: visa.country,
+                        type: visa.type,
+                        // status: 'Active' // Optional: match only active ones?
+                    }
+                });
+
+                if (existingVisa) {
+                    await tx.visa.update({
+                        where: { id: existingVisa.id },
+                        data: {
+                            grantDate: visa.grantDate,
+                            expiryDate: visa.expiryDate,
+                            fileUrl: visa.fileUrl
+                        }
+                    });
+                } else {
+                    await tx.visa.create({
+                        data: {
+                            customerId: id,
+                            country: visa.country,
+                            type: visa.type,
+                            grantDate: visa.grantDate,
+                            expiryDate: visa.expiryDate,
+                            fileUrl: visa.fileUrl,
+                            status: 'Active'
                         }
                     });
                 }

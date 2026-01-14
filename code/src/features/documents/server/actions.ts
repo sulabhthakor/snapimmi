@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { Document } from '../types';
 import { revalidatePath } from 'next/cache';
+import { auth } from "@/auth";
 
 export async function getDocuments(firmId: string) {
     const docs = await prisma.document.findMany({
@@ -59,5 +60,62 @@ export async function uploadFile(formData: FormData) {
     const fileUrl = `/uploads/${filename}`;
 
     return { success: true, url: fileUrl };
+}
+
+export async function deleteDocument(documentId: string) {
+    try {
+        const doc = await prisma.document.findUnique({
+            where: { id: documentId },
+            include: { customer: true }
+        });
+
+        if (!doc) return { success: false, error: "Document not found" };
+
+        await prisma.document.update({
+            where: { id: documentId },
+            data: { deletedAt: new Date() }
+        });
+
+        revalidatePath(`/dashboard/${doc.customer.firmId}/documents`);
+        return { success: true };
+    } catch (error) {
+        console.error("Delete document error:", error);
+        return { success: false, error: "Failed to delete document" };
+    }
+}
+
+export async function createDocument(
+    customerId: string,
+    category: string,
+    files: { name: string; fileUrl: string; fileSize: number; mimeType: string }[]
+) {
+    const session = await auth();
+    // @ts-ignore
+    const firmId = session?.user?.firmId;
+
+    if (!firmId) return { success: false, error: "Unauthorized" };
+
+    try {
+        await prisma.$transaction(
+            files.map(file =>
+                prisma.document.create({
+                    data: {
+                        customerId,
+                        name: file.name,
+                        category,
+                        fileUrl: file.fileUrl,
+                        fileSize: file.fileSize,
+                        mimeType: file.mimeType,
+                    }
+                })
+            )
+        );
+
+        revalidatePath(`/dashboard/${firmId}/documents`);
+        return { success: true };
+    } catch (error) {
+        console.error("Create document error:", error);
+        return { success: false, error: "Failed to create document records" };
+    }
 }
 

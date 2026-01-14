@@ -7,6 +7,7 @@ import * as z from 'zod';
 import { updateProfile } from '../actions';
 import { Loader2, CheckCircle2, Save, User, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const ProfileSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -14,7 +15,6 @@ const ProfileSchema = z.object({
 
 export function ProfileForm({ user }: { user: { name: string; email: string } }) {
     const [isPending, startTransition] = useTransition();
-    const [successMessage, setSuccessMessage] = useState('');
     const router = useRouter();
 
     const form = useForm({
@@ -25,15 +25,13 @@ export function ProfileForm({ user }: { user: { name: string; email: string } })
     });
 
     const onSubmit = (data: z.infer<typeof ProfileSchema>) => {
-        setSuccessMessage('');
         startTransition(async () => {
             const result = await updateProfile(data);
             if (result.success) {
-                setSuccessMessage('Profile updated successfully');
+                toast.success('Profile updated successfully');
                 router.refresh(); // Update the UI including the user menu
-                setTimeout(() => setSuccessMessage(''), 3000);
             } else {
-                alert('Failed to update profile');
+                toast.error('Failed to update profile');
             }
         });
     };
@@ -98,13 +96,6 @@ export function ProfileForm({ user }: { user: { name: string; email: string } })
                         </>
                     )}
                 </button>
-
-                {successMessage && (
-                    <div className="text-green-600 text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-                        <CheckCircle2 className="h-4 w-4" />
-                        {successMessage}
-                    </div>
-                )}
             </div>
         </form>
     );

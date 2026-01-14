@@ -10,12 +10,13 @@ import { createApplication } from '../server/actions';
 import { getCustomers } from '../../customers/server/actions';
 import { uploadFile } from '../../documents/server/actions';
 import { Loader2, ArrowRight, ArrowLeft, Check, Search, User, Upload, FileText, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 // We need a definition for the customer we select
 type CustomerOption = {
     id: string;
     fullName: string;
-    email: string;
+    email: string | null;
 };
 
 export function NewApplicationForm({ firmId }: { firmId: string }) {
@@ -70,12 +71,13 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                 if (fieldName === 'passportFront') form.setValue('passport.fileUrl', result.url);
                 if (fieldName === 'passportBack') form.setValue('passport.backFileUrl', result.url);
                 if (fieldName === 'visaFile') form.setValue('visa.fileUrl', result.url);
+                toast.success('File uploaded successfully');
             } else {
-                alert('Upload failed');
+                toast.error('Upload failed');
             }
         } catch (error) {
             console.error(error);
-            alert('Upload error');
+            toast.error('Upload error');
         } finally {
             setIsUploading(prev => ({ ...prev, [fieldName]: false }));
         }
@@ -89,7 +91,7 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
 
             setIsLoadingCustomers(true);
             try {
-                const { data } = await getCustomers({ firmId, search: searchTerm, page: 1, limit: 5 });
+                const { data } = await getCustomers({ search: searchTerm, page: 1, limit: 5, status: 'ALL' });
                 setCustomers(data.map(c => ({ id: c.id, fullName: c.fullName, email: c.email })));
             } catch (error) {
                 console.error("Failed to fetch customers", error);
@@ -124,10 +126,11 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
         startTransition(async () => {
             const result = await createApplication(data);
             if (result.success) {
+                toast.success('Application created successfully');
                 router.push(`/dashboard/${firmId}/applications`);
                 router.refresh();
             } else {
-                alert('Failed to create application');
+                toast.error('Failed to create application');
             }
         });
     };

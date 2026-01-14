@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Save, User, FileText, Users, FolderClosed, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { DocumentVault } from '@/features/documents/components/DocumentVault';
+import { toast } from 'sonner';
 
 type CustomerData = any; // Ideally import fully joined type
 
@@ -60,18 +61,19 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
             // Ideally, we split server actions or make schema partial. 
             // Workaround: Construct full object with current state of other parts.
             const fullPayload = {
-                ...profileForm.getValues(),
-                isFamilyHead: familyForm.getValues('isFamilyHead'),
+                ...data,
+                isFamilyHead: familyForm.getValues('isFamilyHead') || false,
                 existingFamilyId: familyForm.getValues('existingFamilyId'),
                 newFamilyName: familyForm.getValues('newFamilyName'),
             };
 
-            const result = await updateCustomer(fullPayload);
+
+            const result = await updateCustomer(fullPayload as any);
             if (result.success) {
                 router.refresh();
-                alert('Profile updated successfully');
+                toast.success('Profile updated successfully');
             } else {
-                alert('Failed to update: ' + JSON.stringify(result.error));
+                toast.error('Failed to update profile');
             }
         });
     };
@@ -82,15 +84,19 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                 ...profileForm.getValues(),
                 ...data,
                 // Ensure passport is valid if it's there
-                passport: profileForm.getValues('passport')
+                passport: profileForm.getValues('passport') ? {
+                    ...profileForm.getValues('passport'),
+                    issueDate: profileForm.getValues('passport.issueDate') as unknown as Date,
+                    expiryDate: profileForm.getValues('passport.expiryDate') as unknown as Date,
+                } : undefined
             };
 
-            const result = await updateCustomer(fullPayload);
+            const result = await updateCustomer(fullPayload as any);
             if (result.success) {
                 router.refresh();
-                alert('Family settings updated');
+                toast.success('Family settings updated');
             } else {
-                alert('Failed: ' + JSON.stringify(result.error));
+                toast.error('Failed to update family settings');
             }
         });
     };
@@ -103,8 +109,8 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('PROFILE')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'PROFILE'
-                                ? 'border-black text-black'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-black text-black'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         <User className="h-4 w-4" />
@@ -113,8 +119,8 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('FAMILY')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'FAMILY'
-                                ? 'border-black text-black'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-black text-black'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         <Users className="h-4 w-4" />
@@ -123,8 +129,8 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('DOCUMENTS')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'DOCUMENTS'
-                                ? 'border-black text-black'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-black text-black'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         <FolderClosed className="h-4 w-4" />
@@ -168,11 +174,11 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Issue Date</label>
-                                <input type="date" {...profileForm.register('passport.issueDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="date" {...profileForm.register('passport.issueDate', { valueAsDate: true })} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Expiry Date</label>
-                                <input type="date" {...profileForm.register('passport.expiryDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="date" {...profileForm.register('passport.expiryDate', { valueAsDate: true })} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Place of Issue</label>

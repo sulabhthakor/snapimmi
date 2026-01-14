@@ -63,8 +63,8 @@ export const CreateApplicationRequestSchema = z.object({
     customerId: z.string().min(1, "Customer is required"),
     country: z.string().min(2, "Country is required"),
     visaType: z.string().min(2, "Visa Type is required"),
-    status: ApplicationStatusSchema.default('PENDING'),
-    priority: PrioritySchema.default('MEDIUM'),
+    status: ApplicationStatusSchema,
+    priority: PrioritySchema,
     notes: z.string().optional(),
 
     // Optional Document Details

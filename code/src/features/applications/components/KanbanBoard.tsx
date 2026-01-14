@@ -23,7 +23,7 @@ interface KanbanBoardProps {
     initialData: Application[];
 }
 
-const COLUMNS: ApplicationStatus[] = ['INQUIRY', 'DOC_COLLECTION', 'APPLIED', 'DECISION'];
+const COLUMNS: ApplicationStatus[] = ['PENDING', 'DOCUMENTS_COLLECTED', 'APPLIED', 'APPROVED', 'REJECTED'];
 
 export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const [applications, setApplications] = useState<Application[]>(initialData);

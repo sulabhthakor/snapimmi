@@ -1,29 +1,128 @@
-'use client';
-
-import { useState, useCallback } from 'react';
-import { UploadCloud, File, X, Loader2 } from 'lucide-react';
-import { uploadFile } from '../server/actions';
+import React, { useState, useCallback, useEffect } from 'react';
+import { UploadCloud, File, X, Loader2, Search, User, Check } from 'lucide-react';
+import { uploadFile, createDocument } from '../server/actions';
+import { getCustomers } from '../../customers/server/actions';
+import { toast } from 'sonner';
 
 export function UploadDropzone({ onClose }: { onClose: () => void }) {
-    // ...
-    const handleUpload = async () => {
-        setIsUploading(true);
-        // Simulate upload for each file
-        const formData = new FormData();
-        files.forEach(file => formData.append('file', file)); // API expects 'file' not 'files' - we need to handle multi-upload properly or loop
+    const [files, setFiles] = useState<File[]>([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
-        // Current uploadFile handles single file. We need to loop here or Update API.
-        // Let's loop for now to fix the build quickly.
-        for (const file of files) {
-            const formData = new FormData();
-            formData.append('file', file);
-            await uploadFile(formData);
+    // Metadata State
+    const [selectedCustomerId, setSelectedCustomerId] = useState('');
+    const [category, setCategory] = useState('General');
+
+    // Customer Search State
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [customers, setCustomers] = useState<{ id: string; fullName: string; email: string | null }[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+    // Initial load & Search
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            setIsSearching(true);
+            try {
+                const result = await getCustomers({
+                    search: customerSearch,
+                    page: 1,
+                    limit: 10,
+                    status: 'ALL'
+                });
+                setCustomers(result.data);
+            } catch (error) {
+                console.error("Failed to fetch customers", error);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(fetchCustomers, 300);
+        return () => clearTimeout(timer);
+    }, [customerSearch]);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files?.length) {
+            setFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
         }
+    }, []);
 
-        setIsUploading(false);
-        onClose();
-        // Ideally trigger a refresh of the document list here
+    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.length) {
+            setFiles(prev => [...prev, ...Array.from(e.target.files as FileList)]);
+        }
+    }, []);
+
+    const removeFile = useCallback((index: number) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleUpload = async () => {
+        if (!selectedCustomerId) {
+            toast.error("Please select a customer");
+            return;
+        }
+        if (files.length === 0) return;
+
+        setIsUploading(true);
+        const uploadedDocs: { name: string; fileUrl: string; fileSize: number; mimeType: string }[] = [];
+        let hasError = false;
+
+        try {
+            // 1. Upload all files
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const result = await uploadFile(formData);
+                if (result.success && result.url) {
+                    uploadedDocs.push({
+                        name: file.name,
+                        fileUrl: result.url,
+                        fileSize: file.size,
+                        mimeType: file.type || 'application/octet-stream'
+                    });
+                } else {
+                    hasError = true;
+                    console.error("Values failed for", file.name);
+                }
+            }
+
+            // 2. Create DB records
+            if (uploadedDocs.length > 0) {
+                const createResult = await createDocument(selectedCustomerId, category, uploadedDocs);
+                if (createResult.success) {
+                    toast.success(`Successfully uploaded ${uploadedDocs.length} document(s)`);
+                    onClose();
+                } else {
+                    toast.error("Failed to save document records");
+                }
+            } else if (hasError) {
+                toast.error("Failed to upload files");
+            }
+
+        } catch (error) {
+            console.error("Upload process error", error);
+            toast.error("An error occurred during upload");
+        } finally {
+            setIsUploading(false);
+        }
     };
+
+    const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -35,7 +134,87 @@ export function UploadDropzone({ onClose }: { onClose: () => void }) {
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 space-y-6">
+                    {/* Customer Selection */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Link to Customer</label>
+                        <div className="relative">
+                            <div
+                                className="flex items-center gap-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus-within:border-black focus-within:ring-1 focus-within:ring-black cursor-text"
+                                onClick={() => setShowCustomerDropdown(true)}
+                            >
+                                <Search className="h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search customer..."
+                                    className="flex-1 outline-none min-w-0"
+                                    value={showCustomerDropdown ? customerSearch : (selectedCustomer?.fullName || customerSearch)}
+                                    onChange={(e) => {
+                                        setCustomerSearch(e.target.value);
+                                        setShowCustomerDropdown(true);
+                                        if (selectedCustomerId) setSelectedCustomerId(''); // Reset selection on edit
+                                    }}
+                                    onFocus={() => setShowCustomerDropdown(true)}
+                                />
+                                {selectedCustomerId && (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                )}
+                            </div>
+
+                            {showCustomerDropdown && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setShowCustomerDropdown(false)}
+                                    />
+                                    <div className="absolute top-full left-0 right-0 mt-1 z-20 max-h-60 overflow-y-auto bg-white rounded-lg border border-gray-200 shadow-lg">
+                                        {isSearching ? (
+                                            <div className="p-3 text-center text-xs text-gray-500">Searching...</div>
+                                        ) : customers.length > 0 ? (
+                                            customers.map(customer => (
+                                                <button
+                                                    key={customer.id}
+                                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+                                                    onClick={() => {
+                                                        setSelectedCustomerId(customer.id);
+                                                        setCustomerSearch(customer.fullName);
+                                                        setShowCustomerDropdown(false);
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{customer.fullName}</div>
+                                                        <div className="text-xs text-gray-500">{customer.email}</div>
+                                                    </div>
+                                                    {selectedCustomerId === customer.id && (
+                                                        <Check className="h-4 w-4 text-black" />
+                                                    )}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 text-center text-xs text-gray-500">No customers found</div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Category Selection */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Category</label>
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                        >
+                            <option value="General">General</option>
+                            <option value="ID Proof">ID Proof</option>
+                            <option value="Financial">Financial</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Application">Application</option>
+                        </select>
+                    </div>
+
                     {/* Drop Zone */}
                     <div
                         onDragOver={handleDragOver}
@@ -85,7 +264,7 @@ export function UploadDropzone({ onClose }: { onClose: () => void }) {
                     </button>
                     <button
                         onClick={handleUpload}
-                        disabled={files.length === 0 || isUploading}
+                        disabled={files.length === 0 || isUploading || !selectedCustomerId}
                         className="px-4 py-2 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {isUploading ? <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</> : 'Upload Files'}

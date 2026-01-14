@@ -9,20 +9,46 @@ import Link from 'next/link';
 
 export function CustomerList({ initialData }: { initialData: { data: Customer[], total: number } }) {
     const [customers, setCustomers] = useState(initialData.data);
+    const [totalCustomers, setTotalCustomers] = useState(initialData.total);
+    const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'LEAD' | 'ACTIVE'>('ALL');
     const [isPending, startTransition] = useTransition();
     const params = useParams();
     const router = useRouter();
     const firmId = params.firmId as string;
+    const LIMIT = 10;
 
     const handleSearch = useCallback((term: string) => {
         setSearchTerm(term);
         startTransition(async () => {
-            const result = await getCustomers({ search: term, page: 1, limit: 10, status: 'ALL' });
+            const result = await getCustomers({ search: term, page: 1, limit: LIMIT, status: statusFilter });
             // @ts-ignore
             setCustomers(result.data);
+            setTotalCustomers(result.total);
+            setCurrentPage(1);
         });
-    }, []);
+    }, [statusFilter]);
+
+    const handleStatusChange = (newStatus: 'ALL' | 'LEAD' | 'ACTIVE') => {
+        setStatusFilter(newStatus);
+        startTransition(async () => {
+            const result = await getCustomers({ search: searchTerm, page: 1, limit: LIMIT, status: newStatus });
+            // @ts-ignore
+            setCustomers(result.data);
+            setTotalCustomers(result.total);
+            setCurrentPage(1);
+        });
+    };
+
+    const handlePageChange = (newPage: number) => {
+        startTransition(async () => {
+            const result = await getCustomers({ search: searchTerm, page: newPage, limit: LIMIT, status: statusFilter });
+            // @ts-ignore
+            setCustomers(result.data);
+            setCurrentPage(newPage);
+        });
+    };
 
     // Helper to get initials
     const getInitials = (name: string) => {
@@ -50,10 +76,18 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     />
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-black focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors shadow-sm">
-                        <Filter className="h-4 w-4" />
-                        Filters
-                    </button>
+                    <div className="relative">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => handleStatusChange(e.target.value as any)}
+                            className="appearance-none cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white pl-4 pr-10 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors shadow-sm"
+                        >
+                            <option value="ALL">All Customers</option>
+                            <option value="ACTIVE">Active Clients</option>
+                            <option value="LEAD">Leads</option>
+                        </select>
+                        <Filter className="absolute right-3 top-3 h-4 w-4 text-gray-500 pointer-events-none" />
+                    </div>
                     <Link
                         href={`/dashboard/${firmId}/customers/new`}
                         className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg"
@@ -153,13 +187,27 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     </table>
                 </div>
 
-                {/* Pagination Footer (Static for now) */}
-                {customers.length > 0 && (
+                {/* Pagination Footer */}
+                {totalCustomers > 0 && (
                     <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                        <div>Showing <span className="font-medium text-gray-900">{customers.length}</span> results</div>
+                        <div>
+                            Showing <span className="font-medium text-gray-900">{((currentPage - 1) * LIMIT) + 1}</span> to <span className="font-medium text-gray-900">{Math.min(currentPage * LIMIT, totalCustomers)}</span> of <span className="font-medium text-gray-900">{totalCustomers}</span> results
+                        </div>
                         <div className="flex gap-2">
-                            <button disabled className="px-3 py-1 rounded border bg-white disabled:opacity-50">Previous</button>
-                            <button disabled className="px-3 py-1 rounded border bg-white disabled:opacity-50">Next</button>
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1 || isPending}
+                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage * LIMIT >= totalCustomers || isPending}
+                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
                 )}

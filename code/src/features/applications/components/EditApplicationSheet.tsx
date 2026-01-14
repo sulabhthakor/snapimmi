@@ -7,6 +7,7 @@ import { Application, UpdateApplicationRequestSchema } from '../types';
 import { updateApplication } from '../server/actions';
 import { Loader2, X, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface EditApplicationSheetProps {
     application: Application;
@@ -34,10 +35,11 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
         startTransition(async () => {
             const result = await updateApplication(data);
             if (result.success) {
-                router.refresh();
                 onClose();
+                router.refresh();
+                toast.success('Application updated successfully');
             } else {
-                alert('Failed to update application');
+                toast.error('Failed to update application');
             }
         });
     };
