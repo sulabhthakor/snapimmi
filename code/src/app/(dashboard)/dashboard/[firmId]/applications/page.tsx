@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { ApplicationTable } from '@/features/applications/components/ApplicationTable';
 import { getApplications } from '@/features/applications/server/actions';
 
@@ -23,9 +24,12 @@ export default async function ApplicationsPage({
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Application Pipeline</h1>
                     <p className="text-gray-600 mt-1">Track and manage visa applications across stages.</p>
                 </div>
-                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all">
+                <Link
+                    href={`/dashboard/${firmId}/applications/new`}
+                    className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all"
+                >
                     + New Application
-                </button>
+                </Link>
             </div>
 
             <Suspense fallback={<div className="p-4 text-center text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">Loading applications...</div>}>

@@ -1,11 +1,17 @@
-import { FileText, Download } from 'lucide-react';
+import { generateCustomerReport, generateFinancialReport, generateApplicationsReport } from "@/features/reports/server/actions";
+import { ReportCard } from "@/features/reports/components/ReportCard";
+import { auth } from "@/auth";
 
-export default function ReportsPage() {
-    const reports = [
-        { id: 1, name: 'Monthly Financial Report', date: 'Jan 2026', type: 'PDF' },
-        { id: 2, name: 'Customer Acquisition', date: 'Q4 2025', type: 'CSV' },
-        { id: 3, name: 'Visa Success Rate', date: '2025 Yearly', type: 'PDF' },
-    ];
+export default async function ReportsPage({ params }: { params: { firmId: string } }) {
+    const { firmId } = await params; // Await params in modern Next.js 15+ convention
+
+    // Prepare actions bound to firmId
+    const customerAction = generateCustomerReport.bind(null, firmId);
+    const financialAction = generateFinancialReport.bind(null, firmId);
+    const appAction = generateApplicationsReport.bind(null, firmId);
+
+    // Note: In Server Components we can pass Server Actions directly to Client Components.
+    // However, binding arguments is the cleaner way if the action relies on scope.
 
     return (
         <div className="p-6 space-y-6">
@@ -17,24 +23,34 @@ export default function ReportsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {reports.map((report) => (
-                    <div key={report.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                <FileText className="h-6 w-6" />
-                            </div>
-                            <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                {report.type}
-                            </span>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{report.name}</h3>
-                        <p className="text-sm text-gray-500 mb-6">Generated: {report.date}</p>
-                        <button className="w-full py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-black hover:text-black transition-colors flex items-center justify-center gap-2">
-                            <Download className="h-4 w-4" />
-                            Download
-                        </button>
-                    </div>
-                ))}
+                {/* Financials */}
+                <ReportCard
+                    name="Financial Report"
+                    description="Complete record of all revenue, payments, and invoices for the current fiscal period."
+                    type="CSV"
+                    action={financialAction}
+                />
+
+                {/* Customers */}
+                <ReportCard
+                    name="Customer Database"
+                    description="Full export of all customer profiles including contact details and status."
+                    type="CSV"
+                    action={customerAction}
+                />
+
+                {/* Applications */}
+                <ReportCard
+                    name="Application Summary"
+                    description="Detailed list of all visa applications, current statuses, and priorities."
+                    type="CSV"
+                    action={appAction}
+                />
+            </div>
+
+            <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100 text-sm text-gray-500">
+                <h4 className="font-semibold text-gray-700 mb-1">Note on Reporting</h4>
+                <p>Reports are generated in real-time based on current database records. Large datasets may take a few seconds to process.</p>
             </div>
         </div>
     );

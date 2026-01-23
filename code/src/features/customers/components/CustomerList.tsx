@@ -7,6 +7,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Search, Plus, Filter, MoreHorizontal, FileText, FolderClosed } from 'lucide-react';
 import Link from 'next/link';
 
+import { CustomSelect } from '@/components/ui/CustomSelect';
+
 export function CustomerList({ initialData }: { initialData: { data: Customer[], total: number } }) {
     const [customers, setCustomers] = useState(initialData.data);
     const [totalCustomers, setTotalCustomers] = useState(initialData.total);
@@ -76,17 +78,16 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     />
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="relative">
-                        <select
+                    <div className="w-48">
+                        <CustomSelect
                             value={statusFilter}
-                            onChange={(e) => handleStatusChange(e.target.value as any)}
-                            className="appearance-none cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white pl-4 pr-10 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors shadow-sm"
-                        >
-                            <option value="ALL">All Customers</option>
-                            <option value="ACTIVE">Active Clients</option>
-                            <option value="LEAD">Leads</option>
-                        </select>
-                        <Filter className="absolute right-3 top-3 h-4 w-4 text-gray-500 pointer-events-none" />
+                            onChange={(val) => handleStatusChange(val as any)}
+                            options={[
+                                { value: 'ALL', label: 'All Customers' },
+                                { value: 'ACTIVE', label: 'Active Clients' },
+                                { value: 'LEAD', label: 'Leads' },
+                            ]}
+                        />
                     </div>
                     <Link
                         href={`/dashboard/${firmId}/customers/new`}

@@ -1,25 +1,163 @@
 import { Users, FileText, AlertTriangle, TrendingUp, Clock, Activity, ArrowUpRight } from 'lucide-react';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
+import { differenceInDays, format } from 'date-fns';
+import { getTasks } from '@/features/tasks/server/actions';
+import { TaskList } from '@/features/tasks/components/TaskList';
+import { auth } from '@/auth';
+import { Passport, Visa, Customer } from '@prisma/client';
+import { OnboardingGuide } from '@/components/ui/OnboardingGuide';
 
-// Placeholder for future server actions
+// Dashboard Stats Query
 async function getDashboardStats(firmId: string) {
-    // Simulate DB delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const today = new Date();
+    const future30 = new Date(today);
+    future30.setDate(today.getDate() + 30);
+    const future60 = new Date(today);
+    future60.setDate(today.getDate() + 60);
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+
+    const [
+        totalCustomers,
+        activeApplications,
+        applicationStatusCounts,
+        expiringPassports,
+        expiringVisas,
+        tasks,
+        revenueResult,
+        recentApps,
+        recentDocs
+    ] = await Promise.all([
+        prisma.customer.count({ where: { firmId, deletedAt: null } }),
+        prisma.application.count({
+            where: {
+                firmId,
+                deletedAt: null,
+                status: { notIn: ['APPROVED', 'REJECTED'] as any }
+            }
+        }),
+        prisma.application.groupBy({
+            by: ['status'],
+            where: { firmId, deletedAt: null },
+            _count: true
+        }),
+        prisma.passport.findMany({
+            where: {
+                customer: { firmId },
+                expiryDate: { lte: future60, gte: today },
+                deletedAt: null
+            },
+            include: { customer: true },
+            orderBy: { expiryDate: 'asc' },
+            take: 5
+        }),
+        prisma.visa.findMany({
+            where: {
+                customer: { firmId },
+                expiryDate: { lte: future60, gte: today },
+                status: 'Active',
+                deletedAt: null
+            },
+            include: { customer: true },
+            orderBy: { expiryDate: 'asc' },
+            take: 5
+        }),
+        getTasks(firmId),
+        prisma.payment.aggregate({
+            where: { firmId, status: 'COMPLETED', paidAt: { gte: yearStart } },
+            _sum: { amount: true }
+        }),
+        // Derived Activity: Recent Applications
+        prisma.application.findMany({
+            where: { firmId, deletedAt: null },
+            include: { customer: { select: { fullName: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 5
+        }),
+        // Derived Activity: Recent Documents
+        prisma.document.findMany({
+            where: { customer: { firmId: firmId }, deletedAt: null },
+            include: { customer: { select: { fullName: true } } },
+            orderBy: { uploadedAt: 'desc' },
+            take: 5
+        })
+    ]);
+
+    // Combine and sort expiring items
+    const expiringItems = [
+        ...expiringPassports.map((p: Passport & { customer: Customer }) => ({
+            id: p.id,
+            customerId: p.customerId,
+            name: p.customer.fullName,
+            type: 'Passport',
+            date: format(new Date(p.expiryDate), 'dd MMM yyyy'),
+            daysLeft: differenceInDays(new Date(p.expiryDate), today),
+            rawDate: p.expiryDate
+        })),
+        ...expiringVisas.map((v: Visa & { customer: Customer }) => ({
+            id: v.id,
+            customerId: v.customerId,
+            name: v.customer.fullName,
+            type: `Visa (${v.country})`,
+            date: format(new Date(v.expiryDate), 'dd MMM yyyy'),
+            daysLeft: differenceInDays(new Date(v.expiryDate), today),
+            rawDate: v.expiryDate
+        }))
+    ].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 5);
+
+    // Format revenue
+    const revenueAmount = Number(revenueResult._sum.amount || 0);
+    const formattedRevenue = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+    }).format(revenueAmount);
+
+    // Pipeline Counts
+    const pipeline = {
+        PENDING: 0,
+        DOCUMENTS_COLLECTED: 0,
+        APPLIED: 0,
+        APPROVED: 0
+    };
+    applicationStatusCounts.forEach(item => {
+        if (item.status in pipeline) {
+            pipeline[item.status as keyof typeof pipeline] = item._count;
+        }
+    });
+
+    // Merge Activity
+    const activityFeed = [
+        ...recentApps.map(a => ({
+            id: `app-${a.id}`,
+            user: a.customer.fullName, // Or derive Agent name if available, using Customer for now
+            action: 'started application for',
+            target: `${a.visaType} - ${a.targetCountry}`,
+            time: format(new Date(a.createdAt), 'MMM d, h:mm a'),
+            timestamp: new Date(a.createdAt).getTime(),
+            initial: a.customer.fullName.charAt(0)
+        })),
+        ...recentDocs.map(d => ({
+            id: `doc-${d.id}`,
+            user: d.customer.fullName,
+            action: 'uploaded document',
+            target: d.name,
+            time: format(new Date(d.uploadedAt), 'MMM d, h:mm a'),
+            timestamp: new Date(d.uploadedAt).getTime(),
+            initial: d.customer.fullName.charAt(0)
+        }))
+    ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+
     return {
-        totalCustomers: 124,
-        activeApplications: 45,
-        expiringDocuments: 5,
-        revenue: "₹ 12.5L",
-        recentActivity: [
-            { id: 1, user: 'Rahul', action: 'Uploaded Passport', target: 'Amit Shah', time: '2 mins ago' },
-            { id: 2, user: 'Priya', action: 'Created Application', target: 'Canada Student Visa', time: '1 hour ago' },
-            { id: 3, user: 'Rahul', action: 'Sent Reminder', target: 'Sara Smith', time: '3 hours ago' },
-        ],
-        expiringItems: [
-            { id: 1, name: 'John Doe', type: 'Passport', date: '2024-02-10', daysLeft: 2 },
-            { id: 2, name: 'Jane Smith', type: 'Visa (USA)', date: '2024-02-15', daysLeft: 7 },
-        ]
+        totalCustomers,
+        activeApplications,
+        expiringDocuments: expiringItems.length,
+        revenue: formattedRevenue,
+        recentActivity: activityFeed,
+        expiringItems,
+        tasks,
+        pipeline
     };
 }
 
@@ -50,6 +188,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                     </Link>
                 </div>
             </div>
+
+            {/* Onboarding Guide for new firms */}
+            <OnboardingGuide firmId={firmId} stats={stats} />
 
             {/* KPI Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -110,9 +251,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                         </div>
                         <div className="p-0">
                             {stats.expiringItems.map((item, idx) => (
-                                <div key={item.id} className={`flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${idx !== stats.expiringItems.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                                <Link
+                                    key={item.id}
+                                    href={`/dashboard/${firmId}/customers/${item.customerId}`}
+                                    className={`flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer ${idx !== stats.expiringItems.length - 1 ? 'border-b border-gray-50' : ''}`}
+                                >
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold text-xs">
+                                        <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs ${item.daysLeft <= 30 ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
                                             {item.daysLeft}D
                                         </div>
                                         <div>
@@ -120,10 +265,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                                             <div className="text-sm text-gray-500">{item.type} expires on {item.date}</div>
                                         </div>
                                     </div>
-                                    <button className="text-xs border px-3 py-1 rounded-full hover:bg-white hover:border-gray-300">
-                                        Remind
-                                    </button>
-                                </div>
+                                    <span className="text-xs text-gray-400 group-hover:text-black">View →</span>
+                                </Link>
                             ))}
                         </div>
                     </div>
@@ -138,18 +281,26 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                                 </h3>
                                 <p className="text-gray-400 text-sm mb-6">Overview of current application stages.</p>
                                 <div className="h-48 flex items-end gap-4">
-                                    {/* Dummy Bars */}
-                                    <div className="w-full bg-gray-800 rounded-t-sm h-[40%] relative group/bar">
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity">Lead</div>
+                                    {/* Real Data Bars */}
+                                    <div className="w-full bg-gray-800 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.PENDING / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
+                                            Pending: {stats.pipeline.PENDING}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-700 rounded-t-sm h-[60%] relative group/bar">
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity">Docs</div>
+                                    <div className="w-full bg-gray-700 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.DOCUMENTS_COLLECTED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
+                                            Docs: {stats.pipeline.DOCUMENTS_COLLECTED}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-blue-600 rounded-t-sm h-[80%] relative group/bar">
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity">Applied</div>
+                                    <div className="w-full bg-blue-600 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.APPLIED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
+                                            Applied: {stats.pipeline.APPLIED}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-green-500 rounded-t-sm h-[30%] relative group/bar">
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity">Approved</div>
+                                    <div className="w-full bg-green-500 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.APPROVED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
+                                            Approved: {stats.pipeline.APPROVED}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -159,8 +310,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                     </Link>
                 </div>
 
-                {/* Right Column: Activity Feed (1/3 width) */}
+                {/* Right Column: Tasks & Activity (1/3 width) */}
                 <div className="space-y-8">
+                    {/* Tasks Widget */}
+                    <div className="h-[400px]">
+                        <TaskList tasks={stats.tasks as any} firmId={firmId} />
+                    </div>
+
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm ring-1 ring-gray-900/5">
                         <div className="p-6 border-b border-gray-100">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -175,7 +331,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                                     <div className="absolute left-[19px] top-8 bottom-[-24px] w-0.5 bg-gray-100 last:hidden" />
 
                                     <div className="h-10 w-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-800 z-10 ring-4 ring-white shadow-sm">
-                                        {activity.user[0]}
+                                        {activity.initial}
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-900">

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, FolderClosed, Clock, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, FolderClosed, Clock, Zap, IndianRupee } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
 const navigation = {
@@ -10,6 +10,7 @@ const navigation = {
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Applications', href: '/dashboard/applications', icon: FileText },
         { name: 'Customers', href: '/dashboard/customers', icon: Users },
+        { name: 'Revenue', href: '/dashboard/revenue', icon: IndianRupee },
         { name: 'Documents', href: '/dashboard/documents', icon: FolderClosed },
     ],
     intelligence: [

@@ -4,8 +4,9 @@ import { useState, useTransition, useCallback } from 'react';
 import { Application, STATUS_COLORS, STATUS_LABELS, Priority } from '../types';
 import { getApplications } from '../server/actions';
 import { EditApplicationSheet } from './EditApplicationSheet';
-import { Search, Filter, MoreHorizontal, FileText, ChevronRight } from 'lucide-react';
-import { useRouter, useParams } from 'next/navigation';
+import { Search, ChevronRight } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface ApplicationTableProps {
@@ -53,41 +54,47 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
     return (
         <div className="space-y-6">
             {/* Filters Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-200 shadow-sm">
                 <div className="relative w-full sm:w-[350px]">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-700" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
                         placeholder="Search applications..."
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all placeholder:text-gray-600 text-gray-900"
+                        className="w-full pl-11 pr-4 py-2.5"
                         onChange={(e) => handleSearch(e.target.value)}
                     />
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
-                    <select
-                        className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 focus:outline-none focus:border-black cursor-pointer bg-white"
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                        value={filters.status}
-                    >
-                        <option value="ALL">All Status</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="DOCUMENTS_COLLECTED">Documents Collected</option>
-                        <option value="APPLIED">Applied</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                    </select>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                    <div className="w-full sm:w-48">
+                        <CustomSelect
+                            value={filters.status}
+                            onChange={(val) => handleFilterChange('status', val)}
+                            options={[
+                                { value: 'ALL', label: 'All Status' },
+                                { value: 'PENDING', label: 'Pending' },
+                                { value: 'DOCUMENTS_COLLECTED', label: 'Documents Collected' },
+                                { value: 'APPLIED', label: 'Applied' },
+                                { value: 'APPROVED', label: 'Approved' },
+                                { value: 'REJECTED', label: 'Rejected' },
+                            ]}
+                            placeholder="All Status"
+                        />
+                    </div>
 
-                    <select
-                        className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 focus:outline-none focus:border-black cursor-pointer bg-white"
-                        onChange={(e) => handleFilterChange('priority', e.target.value)}
-                        value={filters.priority}
-                    >
-                        <option value="ALL">All Priority</option>
-                        <option value="HIGH">High</option>
-                        <option value="MEDIUM">Medium</option>
-                        <option value="LOW">Low</option>
-                    </select>
+                    <div className="w-full sm:w-48">
+                        <CustomSelect
+                            value={filters.priority}
+                            onChange={(val) => handleFilterChange('priority', val)}
+                            options={[
+                                { value: 'ALL', label: 'All Priority' },
+                                { value: 'HIGH', label: 'High' },
+                                { value: 'MEDIUM', label: 'Medium' },
+                                { value: 'LOW', label: 'Low' },
+                            ]}
+                            placeholder="All Priority"
+                        />
+                    </div>
                 </div>
             </div>
 

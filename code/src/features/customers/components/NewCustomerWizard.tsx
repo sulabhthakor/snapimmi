@@ -1,21 +1,31 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CreateCustomerRequestSchema, PassportSchema, VisaSchema } from '../types';
 import { createCustomer } from '../server/actions';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { uploadFile } from '../../documents/server/actions';
-import { User, FileText, Users, CheckCircle2, ChevronRight, Loader2, ArrowLeft, ArrowRight, Upload, X } from 'lucide-react';
+import { User, FileText, Users, CheckCircle2, Loader2, ArrowLeft, ArrowRight, Save, Plus } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { toast } from 'sonner';
+import { VISA_TYPES, COUNTRIES } from '../../applications/constants';
 
-// Define schemas
+// --- Schemas ---
+
+// Step 1: Basics
 const Step1Schema = CreateCustomerRequestSchema.pick({ fullName: true, email: true, phone: true });
-const Step2Schema = PassportSchema;
-const Step3Schema = VisaSchema; // Step 3 is Visa
-const Step4Schema = z.object({
+
+// Step 2: Documents (Combined)
+const Step2Schema = z.object({
+    passport: PassportSchema.optional(),
+    visa: VisaSchema.optional(),
+});
+
+// Step 3: Family
+const Step3Schema = z.object({
     isFamilyHead: z.boolean(),
     existingFamilyId: z.string().optional(),
     newFamilyName: z.string().optional()
@@ -23,30 +33,67 @@ const Step4Schema = z.object({
 
 export function NewCustomerWizard() {
     const [step, setStep] = useState(1);
+
+    // Family Loop State
+    const [lastCreatedFamilyId, setLastCreatedFamilyId] = useState<string | null>(null);
+
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
     const params = useParams();
     const firmId = params.firmId;
+
+    // Global Form Data Accumulator
     const [formData, setFormData] = useState<Partial<z.infer<typeof CreateCustomerRequestSchema>>>({});
+
+    // UI States for Step 2
+    const [showPassport, setShowPassport] = useState(false);
+    const [showVisa, setShowVisa] = useState(false);
+
+    // File Upload States
     const [files, setFiles] = useState<{ [key: string]: string }>({});
     const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
 
-    // Forms
-    const step1Form = useForm({ resolver: zodResolver(Step1Schema), defaultValues: { fullName: '', email: '', phone: '' } });
-    const step2Form = useForm({
-        resolver: zodResolver(Step2Schema),
-        defaultValues: { number: '', country: 'India', issueDate: undefined, expiryDate: undefined, placeOfIssue: '', frontImage: '', backImage: '' }
-    });
-    const step3Form = useForm({
-        resolver: zodResolver(Step3Schema),
-        defaultValues: { country: '', type: '', grantDate: undefined, expiryDate: undefined, fileUrl: '' }
-    });
-    const step4Form = useForm({
-        resolver: zodResolver(Step4Schema),
-        defaultValues: { isFamilyHead: false, existingFamilyId: '', newFamilyName: '' }
+    // --- Forms ---
+    const step1Form = useForm({
+        resolver: zodResolver(Step1Schema),
+        defaultValues: { fullName: '', email: '', phone: '' }
     });
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string, form: any, formField: string) => {
+    const step2Form = useForm({
+        resolver: zodResolver(Step2Schema),
+        defaultValues: {
+            passport: undefined,
+            visa: undefined,
+        }
+    });
+
+    const searchParams = useSearchParams();
+    const urlFamilyId = searchParams.get('existingFamilyId');
+    // const urlFamilyName = searchParams.get('newFamilyName'); // Optional: active if needed for display
+
+    const step3Form = useForm({
+        resolver: zodResolver(Step3Schema),
+        defaultValues: {
+            isFamilyHead: false,
+            existingFamilyId: urlFamilyId || '',
+            newFamilyName: ''
+        }
+    });
+
+    // Auto-fill family ID if we are in a loop or have URL param
+    const effectiveFamilyId = lastCreatedFamilyId || urlFamilyId;
+
+    if (effectiveFamilyId && step === 3) {
+        // Ensure form has the value if it's missing (e.g. user navigated back and forth)
+        const current = step3Form.getValues('existingFamilyId');
+        if (!current) {
+            step3Form.setValue('existingFamilyId', effectiveFamilyId);
+        }
+    }
+
+    // --- Actions ---
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string, form: any, formPath: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -58,7 +105,7 @@ export function NewCustomerWizard() {
             const result = await uploadFile(fData);
             if (result.success && result.url) {
                 setFiles(prev => ({ ...prev, [fieldName]: result.url }));
-                form.setValue(formField, result.url);
+                form.setValue(formPath, result.url);
                 toast.success('File uploaded successfully');
             } else {
                 toast.error('Upload failed');
@@ -71,72 +118,103 @@ export function NewCustomerWizard() {
         }
     };
 
-    // Handlers
-    const onSubmitStep1 = (data: any) => { setFormData(prev => ({ ...prev, ...data })); setStep(2); };
-
-    const onSubmitStep2 = (data: any) => {
-        // @ts-ignore
-        setFormData(prev => ({ ...prev, passport: data }));
-        setStep(3);
-    };
-    const handleSkipPassport = () => { setStep(3); };
-
-    // Step 3: Visa
-    const onSubmitStep3 = (data: any) => {
-        if (data && data.country && data.type) {
-            // @ts-ignore
-            setFormData(prev => ({ ...prev, visa: data }));
-        }
-        setStep(4);
-    };
-    const handleSkipVisa = () => { setStep(4); };
-
-    // Step 4: Family
-    const onSubmitStep4 = (data: any) => {
-        setFormData(prev => ({ ...prev, ...data }));
-        setStep(5);
-    };
-
-    const onFinalSubmit = () => {
+    const submitData = async (data: Partial<z.infer<typeof CreateCustomerRequestSchema>>, addAnotherMember: boolean = false) => {
         startTransition(async () => {
-            const finalData = {
+            const finalPayload = {
                 ...formData,
-                fullName: formData.fullName!,
-                phone: formData.phone!,
-                isFamilyHead: formData.isFamilyHead || false,
-                passport: formData.passport,
-                visa: formData.visa
+                ...data,
+                // Ensure defaults
+                fullName: data.fullName || formData.fullName!,
+                phone: data.phone || formData.phone!,
             } as z.infer<typeof CreateCustomerRequestSchema>;
 
-            const result = await createCustomer(finalData);
+            // Clean up: If showPassport is false, remove passport data (even if entered previously)
+            if (!showPassport) delete finalPayload.passport;
+            if (!showVisa) delete finalPayload.visa;
+
+            // If looping, ensure we force the family connection if not explicitly set
+            if (addAnotherMember && lastCreatedFamilyId && !finalPayload.existingFamilyId) {
+                finalPayload.existingFamilyId = lastCreatedFamilyId;
+            }
+
+            const result = await createCustomer(finalPayload);
             if (result.success) {
-                toast.success('Customer created successfully');
-                router.push(`/dashboard/${firmId}/customers`);
+                if (addAnotherMember) {
+                    // LOOP LOGIC
+                    toast.success('Member added! Ready for next person.');
+
+                    // Capture Family ID
+                    const newFamilyId = (result.data as any).familyGroupId;
+                    setLastCreatedFamilyId(newFamilyId);
+
+                    // Reset Forms
+                    step1Form.reset();
+                    step2Form.reset();
+                    step3Form.reset({ isFamilyHead: false, existingFamilyId: newFamilyId, newFamilyName: '' });
+                    setFiles({});
+                    setShowPassport(false);
+                    setShowVisa(false);
+                    setFormData({});
+
+                    // Go to Step 1
+                    setStep(1);
+                } else {
+                    toast.success('Customer profile created');
+                    router.push(`/dashboard/${firmId}/customers`);
+                }
             } else {
                 toast.error('Failed to create customer');
+                console.error(result.error);
             }
         });
     };
 
+    // Step 1: Next / Save Early
+    const onSubmitStep1 = (data: z.infer<typeof Step1Schema>) => {
+        setFormData(prev => ({ ...prev, ...data }));
+        setStep(2);
+    };
+
+    const onSaveLead = (data: z.infer<typeof Step1Schema>) => {
+        submitData(data);
+    };
+
+    // Step 2: Next
+    const onSubmitStep2 = (data: z.infer<typeof Step2Schema>) => {
+        const update = { ...formData };
+        if (showPassport && data.passport) update.passport = data.passport;
+        if (showVisa && data.visa) update.visa = data.visa;
+
+        setFormData(update);
+        setStep(3);
+    };
+
+    // Step 3: Finish
+    const onSubmitStep3 = (data: z.infer<typeof Step3Schema>) => {
+        submitData(data, false);
+    };
+
+    const onSaveAndAddMember = (data: z.infer<typeof Step3Schema>) => {
+        submitData(data, true);
+    }
+
     const steps = [
-        { id: 1, title: 'Basic Info', icon: User },
-        { id: 2, title: 'Passport', icon: FileText },
-        { id: 3, title: 'Visa', icon: FileText },
-        { id: 4, title: 'Family', icon: Users },
-        { id: 5, title: 'Review', icon: CheckCircle2 },
+        { id: 1, title: 'Profile', icon: User },
+        { id: 2, title: 'Travel Docs', icon: FileText },
+        { id: 3, title: 'Family', icon: Users },
     ];
 
     return (
         <div className="max-w-4xl mx-auto">
             {/* Steps Timeline */}
-            <div className="mb-12">
-                <div className="flex items-center justify-between relative">
+            <div className="mb-10">
+                <div className="flex items-center justify-between relative max-w-2xl mx-auto">
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-100 -z-10" />
                     {steps.map((s) => {
                         const isActive = step >= s.id;
                         const isCurrent = step === s.id;
                         return (
-                            <div key={s.id} className="flex flex-col items-center gap-2 bg-gray-50 px-2 cursor-pointer" onClick={() => step > s.id && setStep(s.id)}>
+                            <div key={s.id} className="flex flex-col items-center gap-2 bg-gray-50 px-4 cursor-pointer" onClick={() => step > s.id && setStep(s.id)}>
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isActive ? 'bg-black border-black text-white' : 'bg-white border-gray-200 text-gray-400'}`}>
                                     <s.icon className="h-4 w-4" />
                                 </div>
@@ -145,257 +223,288 @@ export function NewCustomerWizard() {
                         )
                     })}
                 </div>
+                {effectiveFamilyId && (
+                    <div className="mt-4 text-center">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">
+                            <Users className="h-3 w-3" /> Adding members to family group
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50 ring-1 ring-gray-900/5 overflow-hidden">
                 <div className="p-8">
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold tracking-tight text-gray-900">{steps[step - 1].title}</h2>
-                        <p className="text-gray-500 mt-1">
-                            {step === 1 && "Create a new profile for your client."}
-                            {step === 2 && "Add passport details and upload document."}
-                            {step === 3 && "Add current visa details if applicable."}
-                            {step === 4 && "Group this client with family members."}
-                            {step === 5 && "Review details before creating."}
-                        </p>
-                    </div>
 
+                    {/* Step 1: Profile */}
                     {step === 1 && (
                         <form onSubmit={step1Form.handleSubmit(onSubmitStep1)} className="space-y-6">
-                            <div className="grid gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Full Name <span className="text-red-500">*</span></label>
-                                    <input {...step1Form.register('fullName')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" placeholder="e.g. Rahul Sharma" />
-                                    {step1Form.formState.errors.fullName && <p className="text-red-500 text-sm mt-1">{step1Form.formState.errors.fullName.message}</p>}
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-bold text-gray-900">Let's start with the basics</h2>
+                                <div className="grid gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-gray-900">Phone <span className="text-red-500">*</span></label>
-                                        <input {...step1Form.register('phone')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" placeholder="+91 98765 43210" />
-                                        {step1Form.formState.errors.phone && <p className="text-red-500 text-sm mt-1">{step1Form.formState.errors.phone.message}</p>}
+                                        <label className="text-sm font-semibold text-gray-900">Full Name <span className="text-red-500">*</span></label>
+                                        <input {...step1Form.register('fullName')} className="w-full" placeholder="e.g. Rahul Sharma" />
+                                        {step1Form.formState.errors.fullName && <p className="text-red-500 text-sm mt-1">{step1Form.formState.errors.fullName.message}</p>}
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-gray-900">Email</label>
-                                        <input {...step1Form.register('email')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" placeholder="client@example.com" />
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-gray-900">Phone <span className="text-red-500">*</span></label>
+                                            <input {...step1Form.register('phone')} className="w-full" placeholder="+91 98765 43210" />
+                                            {step1Form.formState.errors.phone && <p className="text-red-500 text-sm mt-1">{step1Form.formState.errors.phone.message}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-gray-900">Email</label>
+                                            <input {...step1Form.register('email')} className="w-full" placeholder="client@example.com" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex justify-end pt-6 border-t border-gray-50">
+
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                                <button
+                                    type="button"
+                                    onClick={step1Form.handleSubmit(onSaveLead)}
+                                    disabled={isPending}
+                                    className="text-gray-600 hover:text-black hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                >
+                                    <Save className="h-4 w-4" />
+                                    {isPending ? 'Saving...' : 'Save as Lead & Exit'}
+                                </button>
+
                                 <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                    Next Step <ArrowRight className="h-4 w-4" />
+                                    Continue <ArrowRight className="h-4 w-4" />
                                 </button>
                             </div>
                         </form>
                     )}
 
+                    {/* Step 2: Travel Docs */}
                     {step === 2 && (
-                        <form onSubmit={step2Form.handleSubmit(onSubmitStep2)} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Passport Number <span className="text-red-500">*</span></label>
-                                    <input {...step2Form.register('number')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm uppercase placeholder:normal-case" placeholder="A1234567" />
-                                    {step2Form.formState.errors.number && <p className="text-red-500 text-sm mt-1">{step2Form.formState.errors.number.message}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Issuing Country <span className="text-red-500">*</span></label>
-                                    <input {...step2Form.register('country')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Date of Issue</label>
-                                    <input type="date" {...step2Form.register('issueDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Date of Expiry</label>
-                                    <input type="date" {...step2Form.register('expiryDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-900">Place of Issue</label>
-                                <input {...step2Form.register('placeOfIssue')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                            </div>
+                        <form onSubmit={step2Form.handleSubmit(onSubmitStep2)} className="space-y-8">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 mb-6">Travel Documents</h2>
 
-                            {/* File Uploads */}
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative">
-                                    {files['passportFront'] ? (
-                                        <div className="flex flex-col items-center">
-                                            <FileText className="h-8 w-8 text-black mb-2" />
-                                            <span className="text-xs font-medium text-green-600">Front Uploaded</span>
-                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportFront: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><X className="h-4 w-4" /></button>
+                                {/* Passport Section */}
+                                <div className={`p-4 rounded-xl border-2 transition-all mb-6 ${showPassport ? 'border-black bg-gray-50' : 'border-gray-100 bg-white'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
+                                                <FileText className="h-5 w-5 text-gray-900" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900">Passport Details</h3>
+                                                <p className="text-xs text-gray-500">Required for most applications</p>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <label className="cursor-pointer block">
-                                            {isUploading['passportFront'] ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />}
-                                            <span className="text-xs font-medium text-gray-600">Passport Front</span>
-                                            <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'passportFront', step2Form, 'frontImage')} accept="image/*,.pdf" />
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={showPassport} onChange={e => setShowPassport(e.target.checked)} />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                                         </label>
-                                    )}
-                                </div>
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative">
-                                    {files['passportBack'] ? (
-                                        <div className="flex flex-col items-center">
-                                            <FileText className="h-8 w-8 text-black mb-2" />
-                                            <span className="text-xs font-medium text-green-600">Back Uploaded</span>
-                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportBack: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><X className="h-4 w-4" /></button>
-                                        </div>
-                                    ) : (
-                                        <label className="cursor-pointer block">
-                                            {isUploading['passportBack'] ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />}
-                                            <span className="text-xs font-medium text-gray-600">Passport Back</span>
-                                            <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'passportBack', step2Form, 'backImage')} accept="image/*,.pdf" />
-                                        </label>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-6 border-t border-gray-50 items-center">
-                                <button type="button" onClick={handleSkipPassport} className="text-gray-500 text-sm hover:text-black font-medium px-4">Skip for now</button>
-                                <div className="flex gap-3">
-                                    <button type="button" onClick={() => setStep(1)} className="px-6 py-3 rounded-lg border border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-medium text-gray-700 transition-all">Back</button>
-                                    <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                        Next Step <ArrowRight className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    )}
-
-                    {step === 3 && (
-                        <form onSubmit={step3Form.handleSubmit(onSubmitStep3)} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Visa Type <span className="text-red-500">*</span></label>
-                                    <input {...step3Form.register('type')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" placeholder="e.g. Student, Work" />
-                                    {step3Form.formState.errors.type && <p className="text-red-500 text-sm mt-1">{step3Form.formState.errors.type.message}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Country <span className="text-red-500">*</span></label>
-                                    <input {...step3Form.register('country')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" placeholder="e.g. Canada" />
-                                    {step3Form.formState.errors.country && <p className="text-red-500 text-sm mt-1">{step3Form.formState.errors.country.message}</p>}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Grant Date</label>
-                                    <input type="date" {...step3Form.register('grantDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-900">Expiry Date</label>
-                                    <input type="date" {...step3Form.register('expiryDate')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                </div>
-                            </div>
-
-                            {/* Visa File Upload */}
-                            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors relative">
-                                {files['visaFile'] ? (
-                                    <div className="flex flex-col items-center">
-                                        <FileText className="h-8 w-8 text-black mb-2" />
-                                        <span className="text-xs font-medium text-green-600">Vista Copy Uploaded</span>
-                                        <button type="button" onClick={() => setFiles(prev => ({ ...prev, visaFile: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><X className="h-4 w-4" /></button>
                                     </div>
-                                ) : (
-                                    <label className="cursor-pointer block">
-                                        {isUploading['visaFile'] ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />}
-                                        <span className="text-xs font-medium text-gray-600">Upload Visa Copy (Optional)</span>
-                                        <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'visaFile', step3Form, 'fileUrl')} accept="image/*,.pdf" />
-                                    </label>
-                                )}
+
+                                    {showPassport && (
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Number <span className="text-red-500">*</span></label>
+                                                    <input {...step2Form.register('passport.number')} className="w-full" placeholder="A1234567" />
+                                                    {step2Form.formState.errors.passport?.number && <p className="text-red-500 text-xs">{step2Form.formState.errors.passport.number.message}</p>}
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Country <span className="text-red-500">*</span></label>
+                                                    <Controller
+                                                        name="passport.country"
+                                                        control={step2Form.control}
+                                                        render={({ field }) => (
+                                                            <CustomSelect
+                                                                value={field.value ?? ''}
+                                                                onChange={field.onChange}
+                                                                options={COUNTRIES.map(c => ({ value: c, label: c }))}
+                                                                placeholder="Select Country"
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Issue Date <span className="text-red-500">*</span></label>
+                                                    <input type="date" {...step2Form.register('passport.issueDate')} className="w-full" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Expiry Date <span className="text-red-500">*</span></label>
+                                                    <input type="date" {...step2Form.register('passport.expiryDate')} className="w-full" />
+                                                    {step2Form.formState.errors.passport?.expiryDate && <p className="text-red-500 text-xs">Required</p>}
+                                                </div>
+                                            </div>
+
+                                            {/* Passport Uploads */}
+                                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                                <div className="border border-dashed border-gray-300 rounded-lg p-3 text-center bg-white hover:bg-gray-50 transition-colors relative cursor-pointer">
+                                                    {files['passportFront'] ? (
+                                                        <div className="flex items-center justify-center gap-2 text-green-600">
+                                                            <CheckCircle2 className="h-4 w-4" /> <span className="text-xs font-bold">Front</span>
+                                                        </div>
+                                                    ) : (
+                                                        <label className="cursor-pointer block">
+                                                            {isUploading['passportFront'] ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : <span className="text-xs font-medium text-gray-600">+ Upload Front</span>}
+                                                            <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'passportFront', step2Form, 'passport.frontImage')} />
+                                                        </label>
+                                                    )}
+                                                </div>
+                                                <div className="border border-dashed border-gray-300 rounded-lg p-3 text-center bg-white hover:bg-gray-50 transition-colors relative cursor-pointer">
+                                                    {files['passportBack'] ? (
+                                                        <div className="flex items-center justify-center gap-2 text-green-600">
+                                                            <CheckCircle2 className="h-4 w-4" /> <span className="text-xs font-bold">Back</span>
+                                                        </div>
+                                                    ) : (
+                                                        <label className="cursor-pointer block">
+                                                            {isUploading['passportBack'] ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : <span className="text-xs font-medium text-gray-600">+ Upload Back</span>}
+                                                            <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'passportBack', step2Form, 'passport.backImage')} />
+                                                        </label>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Visa Section */}
+                                <div className={`p-4 rounded-xl border-2 transition-all ${showVisa ? 'border-black bg-gray-50' : 'border-gray-100 bg-white'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
+                                                <FileText className="h-5 w-5 text-gray-900" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900">Current Visa</h3>
+                                                <p className="text-xs text-gray-500">If they hold a valid visa</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={showVisa} onChange={e => setShowVisa(e.target.checked)} />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                        </label>
+                                    </div>
+
+                                    {showVisa && (
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Type <span className="text-red-500">*</span></label>
+                                                    <Controller
+                                                        name="visa.type"
+                                                        control={step2Form.control}
+                                                        render={({ field }) => (
+                                                            <CustomSelect
+                                                                value={field.value ?? ''}
+                                                                onChange={field.onChange}
+                                                                options={VISA_TYPES.map(t => ({ value: t, label: t }))}
+                                                                placeholder="Select Type"
+                                                            />
+                                                        )}
+                                                    />
+                                                    {step2Form.formState.errors.visa?.type && <p className="text-red-500 text-xs text-right">Required</p>}
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Country <span className="text-red-500">*</span></label>
+                                                    <Controller
+                                                        name="visa.country"
+                                                        control={step2Form.control}
+                                                        render={({ field }) => (
+                                                            <CustomSelect
+                                                                value={field.value ?? ''}
+                                                                onChange={field.onChange}
+                                                                options={COUNTRIES.map(c => ({ value: c, label: c }))}
+                                                                placeholder="Select Country"
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Grant Date</label>
+                                                    <input type="date" {...step2Form.register('visa.grantDate')} className="w-full" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Expiry Date <span className="text-red-500">*</span></label>
+                                                    <input type="date" {...step2Form.register('visa.expiryDate')} className="w-full" />
+                                                    {step2Form.formState.errors.visa?.expiryDate && <p className="text-red-500 text-xs text-right">Required</p>}
+                                                </div>
+                                            </div>
+
+                                            <div className="border border-dashed border-gray-300 rounded-lg p-3 text-center bg-white hover:bg-gray-50 transition-colors relative cursor-pointer">
+                                                {files['visaFile'] ? (
+                                                    <div className="flex items-center justify-center gap-2 text-green-600">
+                                                        <CheckCircle2 className="h-4 w-4" /> <span className="text-xs font-bold">Document Uploaded</span>
+                                                    </div>
+                                                ) : (
+                                                    <label className="cursor-pointer block">
+                                                        {isUploading['visaFile'] ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : <span className="text-xs font-medium text-gray-600">+ Upload Visa Copy</span>}
+                                                        <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'visaFile', step2Form, 'visa.fileUrl')} />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="flex justify-between pt-6 border-t border-gray-50 items-center">
-                                <button type="button" onClick={handleSkipVisa} className="text-gray-500 text-sm hover:text-black font-medium px-4">Skip for now</button>
-                                <div className="flex gap-3">
-                                    <button type="button" onClick={() => setStep(2)} className="px-6 py-3 rounded-lg border border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-medium text-gray-700 transition-all">Back</button>
-                                    <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                        Next Step <ArrowRight className="h-4 w-4" />
-                                    </button>
-                                </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                                <button type="button" onClick={() => setStep(1)} className="text-gray-600 hover:text-black font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
+                                <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                    Continue <ArrowRight className="h-4 w-4" />
+                                </button>
                             </div>
                         </form>
                     )}
 
-                    {step === 4 && (
-                        <form onSubmit={step4Form.handleSubmit(onSubmitStep4)} className="space-y-8">
-                            <div className="space-y-4">
-                                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${step4Form.watch('isFamilyHead') ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                                    <input type="checkbox" {...step4Form.register('isFamilyHead')} className="mt-1 h-5 w-5 text-black border-gray-300 rounded focus:ring-black" />
+                    {/* Step 3: Family */}
+                    {step === 3 && (
+                        <form onSubmit={step3Form.handleSubmit(onSubmitStep3)} className="space-y-8">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 mb-6">Family Setup</h2>
+
+                                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${step3Form.watch('isFamilyHead') ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                                    <input type="checkbox" {...step3Form.register('isFamilyHead')} className="mt-1" />
                                     <div>
                                         <div className="font-semibold text-gray-900">Set as Family Head</div>
                                         <div className="text-sm text-gray-500">This customer will be the primary contact for a new family group.</div>
                                     </div>
                                 </label>
 
-                                <div className={`relative p-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 transition-opacity ${step4Form.watch('isFamilyHead') ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                <div className={`mt-4 relative p-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 transition-opacity ${step3Form.watch('isFamilyHead') ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Join Existing Family</h3>
-                                    <input {...step4Form.register('existingFamilyId')} placeholder="Search family name..." className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm" />
-                                    <p className="text-xs text-gray-500 mt-2">Leave blank if this is an individual customer with no family group.</p>
+                                    <input
+                                        {...step3Form.register('existingFamilyId')}
+                                        placeholder={effectiveFamilyId ? "Using selected family group..." : "Search family name..."}
+                                        readOnly={!!effectiveFamilyId}
+                                        className={`w-full ${!!effectiveFamilyId ? 'bg-gray-100' : ''}`}
+                                    />
+                                    {effectiveFamilyId && <p className="text-xs text-green-600 mt-1">✓ Associated with family group</p>}
                                 </div>
                             </div>
 
-                            <div className="flex justify-between pt-6 border-t border-gray-50">
-                                <button type="button" onClick={() => setStep(3)} className="px-6 py-3 rounded-lg border border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-medium text-gray-700 transition-all">Back</button>
-                                <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                    Review Details <ArrowRight className="h-4 w-4" />
-                                </button>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                                <button type="button" onClick={() => setStep(2)} className="text-gray-600 hover:text-black font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={step3Form.handleSubmit(onSaveAndAddMember)}
+                                        disabled={isPending}
+                                        className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 font-medium inline-flex items-center gap-2 transition-all hover:shadow-sm"
+                                    >
+                                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4" /> Save & Add Spouse/Child</>}
+                                    </button>
+
+                                    <button type="submit" disabled={isPending} className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-500 font-medium inline-flex items-center gap-2 transition-all shadow-lg shadow-green-100 transform hover:-translate-y-0.5">
+                                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4" /> Finish</>}
+                                    </button>
+                                </div>
                             </div>
                         </form>
-                    )}
-
-                    {step === 5 && (
-                        <div className="space-y-8">
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 space-y-4">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <div className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Full Name</div>
-                                        <div className="font-medium text-gray-900">{formData.fullName}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Contact</div>
-                                        <div className="font-medium text-gray-900">{formData.phone}</div>
-                                        <div className="text-gray-500">{formData.email}</div>
-                                    </div>
-                                    {formData.passport && (
-                                        <div className="col-span-2 pt-4 border-t border-gray-200 mt-2">
-                                            <div className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Passport Details</div>
-                                            <div className="font-medium text-gray-900 flex items-center gap-2">
-                                                <FileText className="h-4 w-4 text-gray-400" />
-                                                {formData.passport.number}
-                                                <span className="text-gray-400">({formData.passport.country})</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.visa && (
-                                        <div className="col-span-2 pt-4 border-t border-gray-200 mt-2">
-                                            <div className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Visa Details</div>
-                                            <div className="font-medium text-gray-900 flex items-center gap-2">
-                                                <FileText className="h-4 w-4 text-gray-400" />
-                                                {formData.visa.type}
-                                                <span className="text-gray-400">({formData.visa.country})</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="col-span-2 pt-4 border-t border-gray-200 mt-2">
-                                        <div className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Family Structure</div>
-                                        <div className="font-medium text-gray-900">
-                                            {formData.isFamilyHead ? 'Creating New Family Group' : (formData.existingFamilyId ? 'Joining Existing Group' : 'Individual Account')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-6 border-t border-gray-50">
-                                <button onClick={() => setStep(4)} className="px-6 py-3 rounded-lg border border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-medium text-gray-700 transition-all" disabled={isPending}>Back</button>
-                                <button onClick={onFinalSubmit} className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-500 font-medium shadow-lg shadow-green-100 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 transition-all transform hover:-translate-y-0.5">
-                                    {isPending ? (
-                                        <><Loader2 className="h-4 w-4 animate-spin" /> Creating Profile...</>
-                                    ) : (
-                                        <>Confirm & Create <CheckCircle2 className="h-4 w-4" /></>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
                     )}
                 </div>
             </div>

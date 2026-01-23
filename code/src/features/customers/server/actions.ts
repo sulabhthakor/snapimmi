@@ -29,6 +29,7 @@ export async function getCustomers(filters: CustomerFilters) {
             { fullName: { contains: search, mode: 'insensitive' } },
             { phone: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
+            { passportMeta: { contains: search, mode: 'insensitive' } }
         ];
     }
 
@@ -169,7 +170,20 @@ export async function getCustomer(customerId: string) {
             firmId: firmId // Ensure tenant isolation
         },
         include: {
-            familyGroup: true,
+            familyGroup: {
+                include: {
+                    members: {
+                        where: { id: { not: customerId } }, // Exclude current customer
+                        select: {
+                            id: true,
+                            fullName: true,
+                            isFamilyHead: true,
+                            email: true,
+                            phone: true
+                        }
+                    }
+                }
+            },
             passports: true,
             visas: {
                 where: { deletedAt: null },
@@ -181,15 +195,32 @@ export async function getCustomer(customerId: string) {
             },
             applications: {
                 where: { deletedAt: null },
-                orderBy: { updatedAt: 'desc' }
+                orderBy: { updatedAt: 'desc' },
+                include: { payments: true }
+            },
+            tasks: {
+                where: { deletedAt: null },
+                orderBy: { dueDate: 'asc' }
             },
             _count: {
-                select: { applications: true, documents: true }
+                select: { applications: true, documents: true, tasks: true }
             }
         }
     });
 
-    return customer;
+    if (!customer) return null;
+
+    // Serialize Decimal types in nested payments
+    return {
+        ...customer,
+        applications: customer.applications.map((app: any) => ({
+            ...app,
+            payments: app.payments.map((p: any) => ({
+                ...p,
+                amount: p.amount.toNumber(),
+            }))
+        }))
+    };
 }
 
 export async function updateCustomer(data: z.infer<typeof import("../types").UpdateCustomerRequestSchema>) {
@@ -325,5 +356,35 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
     } catch (error) {
         console.error("Update Customer Error:", error);
         return { success: false, error: "Failed to update customer" };
+    }
+}
+
+export async function deleteCustomer(customerId: string) {
+    const session = await auth();
+    // @ts-ignore
+    const firmId = session?.user?.firmId;
+    // @ts-ignore
+    const role = session?.user?.role;
+
+    if (!firmId) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    // RBAC: Only ADMIM can delete
+    if (role !== 'ADMIN') {
+        return { success: false, error: "Permission Denied: Only Admins can delete customers." };
+    }
+
+    try {
+        await prisma.customer.update({
+            where: { id: customerId, firmId },
+            data: { deletedAt: new Date() } // Soft Delete
+        });
+
+        revalidatePath(`/dashboard/${firmId}/customers`);
+        return { success: true };
+    } catch (error) {
+        console.error("Delete Customer Error:", error);
+        return { success: false, error: "Failed to delete customer" };
     }
 }

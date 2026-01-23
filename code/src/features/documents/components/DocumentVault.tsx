@@ -7,10 +7,12 @@ import { format } from 'date-fns';
 import { UploadDropzone } from './UploadDropzone';
 import { deleteDocument } from '../server/actions';
 import { toast } from 'sonner';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 export function DocumentVault({ documents }: { documents: Document[] }) {
     const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
     const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -29,10 +31,15 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
         };
     }, []);
 
-    const filteredDocs = documents.filter(doc =>
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredDocs = documents.filter(doc => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doc.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doc.applicationName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = categoryFilter === 'ALL' || doc.category === categoryFilter;
+
+        return matchesSearch && matchesCategory;
+    });
 
     // Helpers
     const getFileIcon = (mime: string) => {
@@ -54,7 +61,6 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
     };
 
     const handleDownload = (doc: Document) => {
-        // Create a temporary link to force download
         const link = document.createElement('a');
         link.href = doc.fileUrl;
         link.download = doc.name;
@@ -80,18 +86,36 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
     return (
         <div className="space-y-6">
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="relative w-full sm:w-[350px]">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <Search className="h-4 w-4 text-gray-400" />
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
+                    <div className="relative w-full sm:max-w-md">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <Search className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by name, customer, or application..."
+                            className="block w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Search documents..."
-                        className="block w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm"
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+
+                    <div className="w-full sm:w-48">
+                        <CustomSelect
+                            value={categoryFilter}
+                            onChange={(val) => setCategoryFilter(val)}
+                            options={[
+                                { value: 'ALL', label: 'All Categories' },
+                                { value: 'ID Proof', label: 'ID Proof' },
+                                { value: 'Legal', label: 'Legal' },
+                                { value: 'Financial', label: 'Financial' },
+                                { value: 'Other', label: 'Other' },
+                            ]}
+                            placeholder="Filter Category"
+                        />
+                    </div>
                 </div>
+
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200">
                         <button
@@ -110,7 +134,7 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
 
                     <button
                         onClick={() => setIsUploadOpen(true)}
-                        className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg"
+                        className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-all shadow-md"
                     >
                         <Plus className="h-4 w-4" />
                         Upload
@@ -157,16 +181,23 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                 )}
                             </div>
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-semibold text-sm text-gray-900 truncate max-w-[120px]" title={doc.name}>{doc.name}</h3>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold text-sm text-gray-900 truncate" title={doc.name}>{doc.name}</h3>
                                     <p className="text-xs text-gray-500 mt-1">{formatSize(doc.fileSize)}</p>
+
+                                    {doc.applicationName && (
+                                        <div className="mt-1 flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit max-w-full truncate">
+                                            <FileText className="h-3 w-3 flex-shrink-0" />
+                                            <span className="truncate">{doc.applicationName}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setActiveMenuId(activeMenuId === doc.id ? null : doc.id);
                                     }}
-                                    className="text-gray-400 hover:text-black p-1 hover:bg-gray-100 rounded"
+                                    className="text-gray-400 hover:text-black p-1 hover:bg-gray-100 rounded ml-2 flex-shrink-0"
                                 >
                                     <MoreVertical className="h-4 w-4" />
                                 </button>
@@ -225,7 +256,14 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-gray-600">
-                                        {doc.customerName || 'N/A'}
+                                        <div className="flex flex-col">
+                                            <span>{doc.customerName || 'N/A'}</span>
+                                            {doc.applicationName && (
+                                                <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-1">
+                                                    {doc.applicationName}
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-gray-600">
                                         {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}

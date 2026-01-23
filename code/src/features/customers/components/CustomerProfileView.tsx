@@ -1,10 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Phone, Users, FileText, FolderClosed, MoreHorizontal, Edit, Plus, Eye, Download, FileIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+    ArrowLeft, Mail, Phone, Users, FileText,
+    FolderClosed, Edit, Plus, Eye, Download, FileIcon, IndianRupee,
+    CheckSquare, CreditCard, Calendar, Clock
+} from 'lucide-react';
 import { EditPassportSheet } from './EditPassportSheet';
 import { EditVisaSheet } from './EditVisaSheet';
+import { updateCustomer } from '../server/actions';
+import { RecordPaymentSheet } from '@/features/payments/components/RecordPaymentSheet';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface CustomerProfileViewProps {
     customer: any;
@@ -12,317 +22,454 @@ interface CustomerProfileViewProps {
 }
 
 export function CustomerProfileView({ customer, firmId }: CustomerProfileViewProps) {
-    const [activeTab, setActiveTab] = useState<'overview' | 'documents'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'documents' | 'tasks' | 'payments'>('overview');
     const [isPassportSheetOpen, setIsPassportSheetOpen] = useState(false);
     const [isVisaSheetOpen, setIsVisaSheetOpen] = useState(false);
 
+    const [paymentApp, setPaymentApp] = useState<{ id: string, title: string } | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+
+    const handleCreateFamilyGroup = () => {
+        startTransition(async () => {
+            const res = await updateCustomer({
+                id: customer.id,
+                isFamilyHead: true,
+                fullName: customer.fullName,
+                email: customer.email,
+                phone: customer.phone,
+                // @ts-ignore
+                isFamilyHead: true
+            });
+
+            if (res.success) {
+                toast.success("Family Group Created");
+                router.refresh();
+            } else {
+                toast.error("Failed to create family group");
+            }
+        });
+    };
+
+    // Derived Data
+    const allPayments = useMemo(() => {
+        const payments: any[] = [];
+        customer.applications?.forEach((app: any) => {
+            if (app.payments) {
+                app.payments.forEach((p: any) => {
+                    payments.push({ ...p, applicationTitle: `${app.visaType} - ${app.targetCountry}` });
+                });
+            }
+        });
+        return payments.sort((a, b) => new Date(b.paidAt || b.createdAt).getTime() - new Date(a.paidAt || a.createdAt).getTime());
+    }, [customer.applications]);
+
+    const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+    const tabs = [
+        { id: 'overview', label: 'Overview', icon: FileText },
+        { id: 'applications', label: 'Applications', icon: FileText, count: customer._count?.applications },
+        { id: 'documents', label: 'Documents', icon: FolderClosed, count: customer._count?.documents },
+        { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: customer.tasks?.length },
+        { id: 'payments', label: 'Payments', icon: CreditCard, count: allPayments.length },
+    ];
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <EditPassportSheet customer={customer} isOpen={isPassportSheetOpen} onClose={() => setIsPassportSheetOpen(false)} />
             <EditVisaSheet customer={customer} isOpen={isVisaSheetOpen} onClose={() => setIsVisaSheetOpen(false)} />
 
-            {/* Header / Breadcrumbs */}
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                <Link href={`/dashboard/${firmId}/customers`} className="hover:text-black flex items-center gap-1">
-                    <ArrowLeft className="h-4 w-4" />
-                    Customers
-                </Link>
-                <span>/</span>
-                <span className="font-medium text-gray-900">{customer.fullName}</span>
-            </div>
+            <RecordPaymentSheet
+                applicationId={paymentApp?.id || ''}
+                applicationTitle={paymentApp?.title || ''}
+                isOpen={!!paymentApp}
+                onClose={() => setPaymentApp(null)}
+            />
 
-            {/* Main Header Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-6">
-                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-white text-2xl font-bold shadow-md ring-4 ring-gray-50">
-                        {customer.fullName.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{customer.fullName}</h1>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 font-mono text-xs">
-                                ID: {customer.id.slice(-4).toUpperCase()}
-                            </div>
-                            {customer.isFamilyHead && (
-                                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100 font-medium text-xs">
-                                    <Users className="h-3 w-3" />
-                                    Family Head
+            {/* Header Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-6">
+                        <div className="h-20 w-20 rounded-full bg-slate-900 flex items-center justify-center text-white text-2xl font-bold shadow-md ring-4 ring-gray-50">
+                            {customer.fullName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">{customer.fullName}</h1>
+                            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                                <div className="flex items-center gap-1.5 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                    ID: {customer.id.slice(-4).toUpperCase()}
                                 </div>
-                            )}
+                                {(customer.email) && (
+                                    <div className="flex items-center gap-1.5">
+                                        <Mail className="h-3.5 w-3.5" />
+                                        {customer.email}
+                                    </div>
+                                )}
+                                {(customer.phone) && (
+                                    <div className="flex items-center gap-1.5">
+                                        <Phone className="h-3.5 w-3.5" />
+                                        {customer.phone}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <Link
+                            href={`/dashboard/${firmId}/customers/${customer.id}/edit`}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                            <Edit className="h-4 w-4" />
+                            Edit
+                        </Link>
+                        <Link
+                            href={`/dashboard/${firmId}/applications/new?customerId=${customer.id}`}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                        >
+                            <Plus className="h-4 w-4" />
+                            New Application
+                        </Link>
+                    </div>
                 </div>
-                <div className="flex gap-3 w-full md:w-auto">
-                    <Link href={`/dashboard/${firmId}/customers/${customer.id}/edit`} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">
-                        <Edit className="h-4 w-4" />
-                        Edit Profile
-                    </Link>
-                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm">
-                        <Plus className="h-4 w-4" />
-                        New Application
-                    </button>
+
+                {/* Quick Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-gray-100">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Apps</span>
+                        <span className="text-xl font-bold text-gray-900">{customer._count?.applications || 0}</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</span>
+                        <span className="text-xl font-bold text-gray-900">{customer._count?.documents || 0}</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</span>
+                        <span className="text-xl font-bold text-gray-900">₹{totalPaid.toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Tasks</span>
+                        <span className="text-xl font-bold text-gray-900">{customer.tasks?.length || 0}</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="border-b border-gray-200 flex items-center gap-6 overflow-x-auto">
-                <button
-                    onClick={() => setActiveTab('overview')}
-                    className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap px-1 ${activeTab === 'overview' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                >
-                    Overview
-                </button>
-                <button
-                    onClick={() => setActiveTab('documents')}
-                    className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap px-1 ${activeTab === 'documents' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                >
-                    Documents & Visa
-                </button>
+            {/* Tabs Navigation */}
+            <div className="border-b border-gray-200">
+                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={cn(
+                                "pb-3.5 pt-2 text-sm font-medium border-b-2 transition-all whitespace-nowrap px-1 flex items-center gap-2",
+                                activeTab === tab.id
+                                    ? "border-slate-900 text-slate-900"
+                                    : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                            )}
+                        >
+                            <tab.icon className="h-4 w-4" />
+                            {tab.label}
+                            {tab.count !== undefined && (
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-xs font-bold",
+                                    activeTab === tab.id ? "bg-slate-100 text-slate-700" : "bg-gray-100 text-gray-600"
+                                )}>
+                                    {tab.count}
+                                </span>
+                            )}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Sidebar: Profile & Info */}
+                {/* Left Column (Sticky info? maybe) */}
                 <div className="space-y-6">
-                    {/* Contact Info */}
+                    {/* Family Group Widget */}
                     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            Contact Information
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
-                                    <Mail className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-gray-500 font-medium">Email Address</div>
-                                    <div className="text-sm text-gray-900 break-all">{customer.email || '—'}</div>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
-                                    <Phone className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-gray-500 font-medium">Phone Number</div>
-                                    <div className="text-sm text-gray-900">{customer.phone || '—'}</div>
-                                </div>
-                            </div>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                <Users className="h-4 w-4 text-gray-500" />
+                                Family Group
+                            </h3>
+                            {customer.familyGroup && (
+                                <Link
+                                    href={`/dashboard/${firmId}/customers/new?existingFamilyId=${customer.familyGroupId}&newFamilyName=${encodeURIComponent(customer.familyGroup.name || '')}`}
+                                    className="text-xs font-medium text-blue-600 hover:underline"
+                                >
+                                    Add Member
+                                </Link>
+                            )}
                         </div>
-                    </div>
 
-                    {/* Passport Info Widget */}
-                    {customer.passports.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                    Active Passport
-                                </h3>
-                                <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Edit</button>
-                            </div>
-                            <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 space-y-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Passport Number</div>
-                                        <div className="text-lg font-bold text-blue-900 font-mono">{customer.passports[0].number}</div>
-                                    </div>
-                                    <div className="text-2xl">🇮🇳</div>
+                        {customer.familyGroup ? (
+                            <div className="space-y-3">
+                                <div className="text-sm font-medium text-gray-900 pb-2 border-b border-gray-100">
+                                    {customer.familyGroup.name}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-blue-100/50">
-                                    <div>
-                                        <div className="text-xs text-blue-600">Country</div>
-                                        <div className="text-sm font-medium text-blue-900">{customer.passports[0].country}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-blue-600">Expires</div>
-                                        <div className="text-sm font-medium text-blue-900">
-                                            {new Date(customer.passports[0].expiryDate).toLocaleDateString()}
-                                        </div>
-                                    </div>
+                                <div className="space-y-2">
+                                    {customer.familyGroup.members?.map((member: any) => (
+                                        <Link
+                                            key={member.id}
+                                            href={`/dashboard/${firmId}/customers/${member.id}`}
+                                            className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
+                                                    {member.fullName.slice(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="text-sm text-gray-700 font-medium group-hover:text-black">
+                                                    {member.fullName}
+                                                </div>
+                                            </div>
+                                            {member.isFamilyHead && (
+                                                <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">HEAD</span>
+                                            )}
+                                        </Link>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        ) : (
                             <div className="text-center py-4">
-                                <p className="text-sm text-gray-500 mb-3">No passport details added.</p>
-                                <button onClick={() => setIsPassportSheetOpen(true)} className="text-sm font-medium text-blue-600 hover:underline border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50">
-                                    Add Passport
+                                <p className="text-xs text-gray-500 mb-3">Not part of any family group.</p>
+                                <button
+                                    onClick={handleCreateFamilyGroup}
+                                    disabled={isPending}
+                                    className="text-sm font-medium border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 w-full"
+                                >
+                                    Create Group
                                 </button>
                             </div>
+                        )}
+                    </div>
+
+                    {/* Passport Widget */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                Active Passport
+                            </h3>
+                            <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
                         </div>
-                    )}
+                        {customer.passports?.[0] ? (
+                            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="text-lg font-mono font-bold text-blue-900">{customer.passports[0].number}</div>
+                                    <div className="text-xl">🇮🇳</div>
+                                </div>
+                                <div className="text-xs text-blue-700">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                                <p className="text-xs text-gray-400 mb-2">No passport added</p>
+                                <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Right Main Content */}
-                <div className="lg:col-span-2 space-y-6">
+                {/* Right Column (Tabs Content) */}
+                <div className="lg:col-span-2">
                     {activeTab === 'overview' && (
-                        <>
-                            {/* Active Applications */}
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-gray-500" />
-                                        Applications
-                                        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs font-bold text-gray-700">
-                                            {customer.applications.length}
-                                        </span>
-                                    </h3>
-                                    <button className="text-sm font-medium text-blue-600 hover:underline">View All</button>
-                                </div>
-                                <div className="divide-y divide-gray-100">
-                                    {customer.applications.length > 0 ? (
-                                        customer.applications.map((app: any) => (
-                                            <div key={app.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
-                                                <div className="flex gap-4">
-                                                    <div className={`h-10 w-1 rounded-full ${app.status === 'APPROVED' ? 'bg-green-500' : 'bg-amber-500'}`} />
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">{app.visaType} - {app.targetCountry}</div>
-                                                        <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                                                            {/*@ts-ignore*/}
-                                                            Updated {new Date(app.updatedAt).toLocaleDateString()}
-                                                        </div>
-                                                    </div>
+                        <div className="space-y-6">
+                            {/* Recent Activity / Applications Summary */}
+                            <h3 className="font-semibold text-gray-900">Recent Applications</h3>
+                            {customer.applications?.length > 0 ? (
+                                <div className="space-y-4">
+                                    {customer.applications.slice(0, 3).map((app: any) => (
+                                        <div key={app.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition-colors shadow-sm">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-900">{app.visaType}</h4>
+                                                    <p className="text-sm text-gray-500">Destination: {app.targetCountry}</p>
                                                 </div>
-                                                <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${app.status === 'APPROVED' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'
-                                                    }`}>
+                                                <div className={cn(
+                                                    "px-2.5 py-1 rounded-full text-xs font-bold uppercase",
+                                                    app.status === 'APPROVED' ? "bg-green-100 text-green-700" :
+                                                        app.status === 'REJECTED' ? "bg-red-100 text-red-700" :
+                                                            "bg-amber-100 text-amber-700"
+                                                )}>
                                                     {app.status}
                                                 </div>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="p-8 text-center text-gray-500">
-                                            No active applications.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {activeTab === 'documents' && (
-                        <div className="space-y-6">
-                            {/* Passport & Visa Documents */}
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-gray-500" />
-                                        Identity Documents
-                                    </h3>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setIsPassportSheetOpen(true)} className="text-sm font-medium text-gray-600 hover:text-black">Edit Passport</button>
-                                        <span className="text-gray-300">|</span>
-                                        <button onClick={() => setIsVisaSheetOpen(true)} className="text-sm font-medium text-blue-600 hover:underline">Update Visa</button>
-                                    </div>
-                                </div>
-                                <div className="p-4 space-y-3">
-                                    {/* Passport Files */}
-                                    {customer.passports?.[0]?.frontImage && (
-                                        <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-blue-50 text-blue-600 rounded">
-                                                    <FileText className="h-5 w-5" />
+                                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    Updated {format(new Date(app.updatedAt), 'MMM d, yyyy')}
                                                 </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">Passport Front</div>
-                                                    <div className="text-xs text-gray-500">ID Verification</div>
+                                                <div className="h-4 w-px bg-gray-200" />
+                                                <div className="flex items-center gap-1">
+                                                    <IndianRupee className="h-3.5 w-3.5" />
+                                                    {app.payments?.length || 0} Payments
                                                 </div>
-                                            </div>
-                                            <a href={customer.passports[0].frontImage} target="_blank" className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg">
-                                                <Eye className="h-4 w-4" />
-                                            </a>
-                                        </div>
-                                    )}
-                                    {customer.passports?.[0]?.backImage && (
-                                        <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-blue-50 text-blue-600 rounded">
-                                                    <FileText className="h-5 w-5" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">Passport Back</div>
-                                                    <div className="text-xs text-gray-500">Address Verification</div>
-                                                </div>
-                                            </div>
-                                            <a href={customer.passports[0].backImage} target="_blank" className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg">
-                                                <Eye className="h-4 w-4" />
-                                            </a>
-                                        </div>
-                                    )}
-                                    {/* Visa Files */}
-                                    {customer.visas?.map((visa: any) => (
-                                        <div key={visa.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-purple-50 text-purple-600 rounded">
-                                                    <FileText className="h-5 w-5" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">Visa - {visa.country}</div>
-                                                    <div className="text-xs text-gray-500">{visa.type} • Expires {new Date(visa.expiryDate).toLocaleDateString()}</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {visa.fileUrl && (
-                                                    <a href={visa.fileUrl} target="_blank" className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg">
-                                                        <Eye className="h-4 w-4" />
-                                                    </a>
-                                                )}
                                             </div>
                                         </div>
                                     ))}
-                                    {(!customer.passports?.[0]?.frontImage && !customer.visas?.length) && (
-                                        <div className="text-center text-sm text-gray-500 py-4">No identity documents uploaded.</div>
-                                    )}
                                 </div>
+                            ) : (
+                                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                                    <p className="text-gray-500 mb-4">No applications yet.</p>
+                                    <Link href={`/dashboard/${firmId}/applications/new?customerId=${customer.id}`} className="text-sm font-medium text-blue-600 hover:underline">Start First Application</Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'applications' && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-semibold text-gray-900">All Applications</h3>
+                                <Link href={`/dashboard/${firmId}/applications/new?customerId=${customer.id}`} className="text-sm font-medium text-blue-600 hover:underline">+ New App</Link>
                             </div>
+                            {customer.applications?.map((app: any) => (
+                                <Link key={app.id} href={`/dashboard/${firmId}/applications/${app.id}`} className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition-all">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="font-bold text-gray-900">{app.visaType} - {app.targetCountry}</div>
+                                            <div className="text-sm text-gray-500 mt-1">Priority: {app.priority}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs text-gray-400">{format(new Date(app.createdAt), 'MMM d, yyyy')}</span>
+                                            <ArrowLeft className="h-4 w-4 text-gray-300 rotate-180" />
+                                        </div>
+                                    </div>
 
-                            {/* Generic Files */}
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                        <FolderClosed className="h-5 w-5 text-gray-500" />
-                                        Other Documents
-                                    </h3>
-                                    <button className="text-sm font-medium text-blue-600 hover:underline">Upload New</button>
-                                </div>
-                                {/* Generic Files */}
-                                {(() => {
-                                    // Filter out documents that are already displayed as Passport or Visa
-                                    const knownUrls = new Set<string>();
-                                    if (customer.passports?.[0]?.frontImage) knownUrls.add(customer.passports[0].frontImage);
-                                    if (customer.passports?.[0]?.backImage) knownUrls.add(customer.passports[0].backImage);
-                                    customer.visas?.forEach((v: any) => {
-                                        if (v.fileUrl) knownUrls.add(v.fileUrl);
-                                    });
+                                    {/* Progress Bar (Fake for now) */}
+                                    <div className="mt-4 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-slate-900 rounded-full" style={{ width: app.status === 'APPROVED' ? '100%' : '40%' }} />
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
 
-                                    const otherDocuments = customer.documents.filter((doc: any) => !knownUrls.has(doc.fileUrl));
-
-                                    return (
-                                        <div className="p-4 grid grid-cols-1 gap-3">
-                                            {otherDocuments.length > 0 ? (
-                                                otherDocuments.map((doc: any) => (
-                                                    <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all group bg-gray-50/50">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
-                                                                <FileIcon className="h-5 w-5" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900 truncate">{doc.name}</div>
-                                                                <div className="text-xs text-gray-500">{doc.category} • {(doc.fileSize / 1024).toFixed(0)} KB</div>
-                                                            </div>
+                    {activeTab === 'documents' && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-semibold text-gray-900">Documents</h3>
+                                <button className="text-sm font-medium text-blue-600 hover:underline">Upload Document</button>
+                            </div>
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                {customer.documents?.length > 0 ? (
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-4 py-3">Name</th>
+                                                <th className="px-4 py-3">Category</th>
+                                                <th className="px-4 py-3 text-right">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {customer.documents.map((doc: any) => (
+                                                <tr key={doc.id} className="group hover:bg-gray-50">
+                                                    <td className="px-4 py-3 text-gray-900 font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileIcon className="h-4 w-4 text-gray-400" />
+                                                            {doc.name}
                                                         </div>
-                                                        <a href={doc.fileUrl} download className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
-                                                            <Download className="h-4 w-4" />
-                                                        </a>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="text-center text-sm text-gray-500 py-4">
-                                                    No other documents uploaded.
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-500">{doc.category}</td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <a href={doc.fileUrl} target="_blank" className="text-blue-600 hover:underline">View</a>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <div className="p-8 text-center text-gray-500">No documents found.</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'tasks' && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-semibold text-gray-900">Pending Tasks</h3>
+                                {/* Add Task Button Logic would go here */}
+                            </div>
+                            <div className="space-y-3">
+                                {customer.tasks?.map((task: any) => (
+                                    <div key={task.id} className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
+                                        <div className={`mt-0.5 h-5 w-5 rounded border flex items-center justify-center ${task.status === 'DONE' ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'}`}>
+                                            {task.status === 'DONE' && <CheckSquare className="h-3 w-3" />}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className={cn("text-sm font-medium text-gray-900", task.status === 'DONE' && "line-through text-gray-500")}>
+                                                {task.title}
+                                            </div>
+                                            {task.dueDate && (
+                                                <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+                                                    <Calendar className="h-3 w-3" />
+                                                    Due {format(new Date(task.dueDate), 'MMM d')}
                                                 </div>
                                             )}
                                         </div>
-                                    );
-                                })()}
+                                        <div className={cn(
+                                            "text-[10px] font-bold px-2 py-0.5 rounded uppercase",
+                                            task.priority === 'HIGH' ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-600"
+                                        )}>
+                                            {task.priority}
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!customer.tasks || customer.tasks.length === 0) && (
+                                    <div className="text-center py-8 text-gray-500">All caught up! No tasks.</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'payments' && (
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-gray-900 mb-4">Payment History</h3>
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                {allPayments.length > 0 ? (
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-4 py-3">Date</th>
+                                                <th className="px-4 py-3">Application</th>
+                                                <th className="px-4 py-3">Amount</th>
+                                                <th className="px-4 py-3 text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {allPayments.map((p: any) => (
+                                                <tr key={p.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 text-gray-500">
+                                                        {format(new Date(p.paidAt || p.createdAt), 'MMM d, yyyy')}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-900 font-medium">
+                                                        {p.applicationTitle}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-900">
+                                                        ₹{Number(p.amount).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 rounded-full text-xs font-bold",
+                                                            p.status === 'COMPLETED' ? "bg-green-100 text-green-700" :
+                                                                p.status === 'PENDING' ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
+                                                        )}>
+                                                            {p.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot className="bg-gray-50 border-t border-gray-200 font-bold text-gray-900">
+                                            <tr>
+                                                <td colSpan={2} className="px-4 py-3 text-right">Total Paid</td>
+                                                <td className="px-4 py-3">₹{totalPaid.toLocaleString()}</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                ) : (
+                                    <div className="p-8 text-center text-gray-500">No payments recorded.</div>
+                                )}
                             </div>
                         </div>
                     )}

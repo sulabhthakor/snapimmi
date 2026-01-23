@@ -9,8 +9,16 @@ import {
     Filter,
     ChevronRight,
     FileText,
-    Plane
+    Plane,
+    Edit2,
+    Loader2
 } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
+import { EditPassportSheet } from '../../customers/components/EditPassportSheet';
+import { EditVisaSheet } from '../../customers/components/EditVisaSheet';
+import { getCustomer } from '../../customers/server/actions';
+import { toast } from 'sonner';
+import { useTransition } from 'react';
 
 interface ExpiryItem {
     id: string;
@@ -31,6 +39,29 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('ALL'); // ALL, CRITICAL, URGENT
+
+    // Quick Action State
+    const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+    const [sheetType, setSheetType] = useState<'passport' | 'visa' | null>(null);
+    const [isFetching, startTransition] = useTransition();
+
+    const handleQuickEdit = (e: React.MouseEvent, item: ExpiryItem) => {
+        e.stopPropagation(); // Prevent row click
+        startTransition(async () => {
+            try {
+                const customerData = await getCustomer(item.customerId);
+                if (customerData) {
+                    setSelectedCustomer(customerData);
+                    setSheetType(item.type === 'Passport' ? 'passport' : 'visa');
+                } else {
+                    toast.error("Customer deleted or not found");
+                }
+            } catch (err) {
+                console.error(err);
+                toast.error("Failed to load details");
+            }
+        });
+    };
 
     const getStatusColor = (days: number) => {
         if (days <= 30) return 'bg-red-50 text-red-700 border-red-100';
@@ -71,15 +102,17 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <select
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 focus:outline-none focus:border-black cursor-pointer bg-white"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <option value="ALL">All Expiries</option>
-                        <option value="CRITICAL">Critical (Is &lt; 30 days)</option>
-                        <option value="URGENT">Urgent (30-60 days)</option>
-                    </select>
+                    <div className="w-48">
+                        <CustomSelect
+                            value={filterType}
+                            onChange={(val) => setFilterType(val)}
+                            options={[
+                                { value: 'ALL', label: 'All Expiries' },
+                                { value: 'CRITICAL', label: 'Critical (< 30 days)' },
+                                { value: 'URGENT', label: 'Urgent (30-60 days)' },
+                            ]}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -135,7 +168,14 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900 inline-block transition-colors" />
+                                            <button
+                                                onClick={(e) => handleQuickEdit(e, item)}
+                                                disabled={isFetching}
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-black transition-colors shadow-sm disabled:opacity-50"
+                                            >
+                                                {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Edit2 className="h-3 w-3" />}
+                                                Quick Fix
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -156,6 +196,22 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                     </table>
                 </div>
             </div>
+
+            {/* Sheets */}
+            {selectedCustomer && (
+                <>
+                    <EditPassportSheet
+                        customer={selectedCustomer}
+                        isOpen={sheetType === 'passport'}
+                        onClose={() => { setSheetType(null); setSelectedCustomer(null); }}
+                    />
+                    <EditVisaSheet
+                        customer={selectedCustomer}
+                        isOpen={sheetType === 'visa'}
+                        onClose={() => { setSheetType(null); setSelectedCustomer(null); }}
+                    />
+                </>
+            )}
         </div>
     );
 }

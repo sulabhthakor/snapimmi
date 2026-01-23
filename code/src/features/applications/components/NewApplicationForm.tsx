@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CreateApplicationRequestSchema } from '../types';
 import { createApplication } from '../server/actions';
-import { getCustomers } from '../../customers/server/actions';
+import { getCustomers, getCustomer } from '../../customers/server/actions';
 import { uploadFile } from '../../documents/server/actions';
 import { Loader2, ArrowRight, ArrowLeft, Check, Search, User, Upload, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { VISA_TYPES, COUNTRIES } from '../constants';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 // We need a definition for the customer we select
 type CustomerOption = {
@@ -26,6 +28,7 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
     const [customers, setCustomers] = useState<CustomerOption[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+    const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
     const [files, setFiles] = useState<{ [key: string]: string }>({}); // Store uploaded file URLs
     const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
@@ -54,59 +57,161 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
         },
     });
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(prev => ({ ...prev, [fieldName]: true }));
-
+        setIsUploading(prev => ({ ...prev, [key]: true }));
         const formData = new FormData();
         formData.append('file', file);
 
         try {
             const result = await uploadFile(formData);
             if (result.success && result.url) {
-                setFiles(prev => ({ ...prev, [fieldName]: result.url }));
-                // Update form value based on field name mapping
-                if (fieldName === 'passportFront') form.setValue('passport.fileUrl', result.url);
-                if (fieldName === 'passportBack') form.setValue('passport.backFileUrl', result.url);
-                if (fieldName === 'visaFile') form.setValue('visa.fileUrl', result.url);
-                toast.success('File uploaded successfully');
+                setFiles(prev => ({ ...prev, [key]: result.url }));
+
+                // Set Form Values based on key
+                if (key === 'passportFront') {
+                    form.setValue('passport.fileUrl', result.url);
+                    form.setValue('passport.fileSize', file.size);
+                    form.setValue('passport.mimeType', file.type);
+                } else if (key === 'passportBack') {
+                    form.setValue('passport.backFileUrl', result.url);
+                    form.setValue('passport.backFileSize', file.size);
+                    form.setValue('passport.backMimeType', file.type);
+                } else if (key === 'visaFile') {
+                    form.setValue('visa.fileUrl', result.url);
+                    form.setValue('visa.fileSize', file.size);
+                    form.setValue('visa.mimeType', file.type);
+                }
+
+                toast.success('File uploaded');
             } else {
                 toast.error('Upload failed');
             }
         } catch (error) {
             console.error(error);
-            toast.error('Upload error');
+            toast.error('Upload failed');
         } finally {
-            setIsUploading(prev => ({ ...prev, [fieldName]: false }));
+            setIsUploading(prev => ({ ...prev, [key]: false }));
         }
     };
 
-    // Fetch customers when searching
-    useEffect(() => {
-        const timeoutId = setTimeout(async () => {
-            // Only fetch if step is 1
-            if (step !== 1) return;
+    const searchParams = useSearchParams();
 
+    // Check for customerId query param on mount
+    useEffect(() => {
+        const customerIdParam = searchParams.get('customerId');
+        if (customerIdParam && !selectedCustomer) {
+            getCustomer(customerIdParam).then((customer) => {
+                if (customer) {
+                    const customerOption = {
+                        id: customer.id,
+                        fullName: customer.fullName,
+                        email: customer.email
+                    };
+                    // Ensure the customer appears in the list so it can be seen as selected
+                    setCustomers([customerOption]);
+
+                    handleSelectCustomer(customerOption);
+                }
+            });
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (!searchTerm) {
+            setCustomers([]);
+            return;
+        }
+
+        const delayDebounceSq = setTimeout(async () => {
             setIsLoadingCustomers(true);
             try {
-                const { data } = await getCustomers({ search: searchTerm, page: 1, limit: 5, status: 'ALL' });
-                setCustomers(data.map(c => ({ id: c.id, fullName: c.fullName, email: c.email })));
+                const result = await getCustomers({ search: searchTerm, limit: 5, status: 'ALL', page: 1 });
+                // Map to option
+                const options = result.data.map(c => ({
+                    id: c.id,
+                    fullName: c.fullName,
+                    email: c.email
+                }));
+                setCustomers(options);
             } catch (error) {
-                console.error("Failed to fetch customers", error);
+                console.error(error);
             } finally {
                 setIsLoadingCustomers(false);
             }
         }, 300);
 
-        return () => clearTimeout(timeoutId);
-    }, [searchTerm, firmId, step]);
+        return () => clearTimeout(delayDebounceSq);
+    }, [searchTerm]);
 
-    const handleSelectCustomer = (customer: CustomerOption) => {
+    const handleSelectCustomer = async (customer: CustomerOption) => {
         setSelectedCustomer(customer);
         form.setValue('customerId', customer.id);
         form.clearErrors('customerId');
+
+        // Smart Pre-fill: Fetch full customer details
+        setIsFetchingDetails(true);
+        try {
+            const fullDetails = await getCustomer(customer.id);
+            if (fullDetails) {
+                // Pre-fill Passport
+                const passport = fullDetails.passports?.[0];
+                if (passport) {
+                    form.setValue('passport.number', passport.number || '');
+                    form.setValue('passport.country', passport.country || '');
+                    if (passport.expiryDate) {
+                        try {
+                            // Handle Date string/object safely
+                            const dateVal = new Date(passport.expiryDate);
+                            if (!isNaN(dateVal.getTime())) {
+                                // Format as YYYY-MM-DD for input type="date" if needed, 
+                                // but react-hook-form valueAsDate expects a Date object or string.
+                                // Let's set it as a string YYYY-MM-DD for the input
+                                const yyyy = dateVal.getFullYear();
+                                const mm = String(dateVal.getMonth() + 1).padStart(2, '0');
+                                const dd = String(dateVal.getDate()).padStart(2, '0');
+                                form.setValue('passport.expiryDate', `${yyyy}-${mm}-${dd}` as any);
+                            }
+                        } catch (e) { console.error("Date parse error", e); }
+                    }
+                    if (passport.frontImage) {
+                        setFiles(prev => ({ ...prev, passportFront: passport.frontImage! }));
+                        form.setValue('passport.fileUrl', passport.frontImage);
+                    }
+                    if (passport.backImage) {
+                        setFiles(prev => ({ ...prev, passportBack: passport.backImage! }));
+                        form.setValue('passport.backFileUrl', passport.backImage);
+                    }
+                    toast.info("Passport details pre-filled from profile.");
+                }
+
+                // Pre-fill Visa (latest one?)
+                const latestVisa = fullDetails.visas?.[0];
+                if (latestVisa) {
+                    form.setValue('visa.type', latestVisa.type || '');
+                    form.setValue('visa.country', latestVisa.country || '');
+                    if (latestVisa.expiryDate) {
+                        const dateVal = new Date(latestVisa.expiryDate);
+                        if (!isNaN(dateVal.getTime())) {
+                            const yyyy = dateVal.getFullYear();
+                            const mm = String(dateVal.getMonth() + 1).padStart(2, '0');
+                            const dd = String(dateVal.getDate()).padStart(2, '0');
+                            form.setValue('visa.expiryDate', `${yyyy}-${mm}-${dd}` as any);
+                        }
+                    }
+                    if (latestVisa.fileUrl) {
+                        setFiles(prev => ({ ...prev, visaFile: latestVisa.fileUrl! }));
+                        form.setValue('visa.fileUrl', latestVisa.fileUrl);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Failed to pre-fill customer details", error);
+        } finally {
+            setIsFetchingDetails(false);
+        }
     };
 
     const handleNext = async () => {
@@ -166,7 +271,7 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                             <input
                                 type="text"
                                 placeholder="Search existing customers..."
-                                className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-3 placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                                className="w-full pl-10 pr-4 py-3"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -199,6 +304,14 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                                         )}
                                     </div>
                                 ))
+                            ) : searchTerm.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Search className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                    <p className="text-gray-500 font-medium">Please fill the search bar</p>
+                                    <p className="text-xs text-gray-400 mt-1">Search by name or email to find a customer</p>
+                                </div>
                             ) : (
                                 <div className="text-center py-8 border border-dashed border-gray-200 rounded-xl">
                                     <p className="text-gray-500 mb-2">No customers found.</p>
@@ -253,10 +366,17 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                         <div className="grid gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Application Type / Visa</label>
-                                <input
-                                    {...form.register('visaType')}
-                                    placeholder="e.g. Tourist Visa, Student Visa, PR"
-                                    className="w-full rounded-lg border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+                                <Controller
+                                    name="visaType"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <CustomSelect
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            options={VISA_TYPES.map(type => ({ value: type, label: type }))}
+                                            placeholder="Select Visa Type"
+                                        />
+                                    )}
                                 />
                                 {form.formState.errors.visaType && (
                                     <p className="text-red-500 text-sm">{form.formState.errors.visaType.message}</p>
@@ -265,10 +385,17 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Target Country</label>
-                                <input
-                                    {...form.register('country')}
-                                    placeholder="e.g. Canada, USA, Australia"
-                                    className="w-full rounded-lg border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+                                <Controller
+                                    name="country"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <CustomSelect
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            options={COUNTRIES.map(country => ({ value: country, label: country }))}
+                                            placeholder="Select Country"
+                                        />
+                                    )}
                                 />
                                 {form.formState.errors.country && (
                                     <p className="text-red-500 text-sm">{form.formState.errors.country.message}</p>
@@ -278,25 +405,41 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-gray-900">Priority</label>
-                                    <select
-                                        {...form.register('priority')}
-                                        className="w-full rounded-lg border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
-                                    >
-                                        <option value="MEDIUM">Medium</option>
-                                        <option value="HIGH">High</option>
-                                        <option value="LOW">Low</option>
-                                    </select>
+                                    <Controller
+                                        name="priority"
+                                        control={form.control}
+                                        render={({ field }) => (
+                                            <CustomSelect
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                options={[
+                                                    { value: 'MEDIUM', label: 'Medium' },
+                                                    { value: 'HIGH', label: 'High' },
+                                                    { value: 'LOW', label: 'Low' },
+                                                ]}
+                                                placeholder="Select Priority"
+                                            />
+                                        )}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-gray-900">Status</label>
-                                    <select
-                                        {...form.register('status')}
-                                        className="w-full rounded-lg border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
-                                    >
-                                        <option value="PENDING">Pending</option>
-                                        <option value="DOCUMENTS_COLLECTED">Documents Collected</option>
-                                        <option value="APPLIED">Applied</option>
-                                    </select>
+                                    <Controller
+                                        name="status"
+                                        control={form.control}
+                                        render={({ field }) => (
+                                            <CustomSelect
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                options={[
+                                                    { value: 'PENDING', label: 'Pending' },
+                                                    { value: 'DOCUMENTS_COLLECTED', label: 'Documents Collected' },
+                                                    { value: 'APPLIED', label: 'Applied' },
+                                                ]}
+                                                placeholder="Select Status"
+                                            />
+                                        )}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -330,15 +473,15 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-sm font-semibold text-gray-900">Passport Number</label>
-                                    <input {...form.register('passport.number')} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" placeholder="A1234567" />
+                                    <input {...form.register('passport.number')} className="w-full mt-1" placeholder="A1234567" />
                                 </div>
                                 <div>
                                     <label className="text-sm font-semibold text-gray-900">Country of Issue</label>
-                                    <input {...form.register('passport.country')} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" placeholder="India" />
+                                    <input {...form.register('passport.country')} className="w-full mt-1" placeholder="India" />
                                 </div>
                                 <div className="col-span-2">
                                     <label className="text-sm font-semibold text-gray-900">Expiry Date</label>
-                                    <input type="date" {...form.register('passport.expiryDate', { valueAsDate: true })} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" />
+                                    <input type="date" {...form.register('passport.expiryDate', { valueAsDate: true })} className="w-full mt-1" />
                                 </div>
                             </div>
 
@@ -346,10 +489,22 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                                 {/* Front Image Upload */}
                                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative">
                                     {files['passportFront'] ? (
-                                        <div className="flex flex-col items-center">
-                                            <FileText className="h-8 w-8 text-black mb-2" />
-                                            <span className="text-xs font-medium text-green-600">Uploaded</span>
-                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportFront: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+                                        <div className="flex flex-col items-center relative w-full h-32 justify-center">
+                                            <img
+                                                src={files['passportFront']}
+                                                alt="Passport Front"
+                                                className="w-full h-full object-cover rounded-lg"
+                                                onError={(e) => {
+                                                    // Fallback if not an image
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                }}
+                                            />
+                                            <div className="hidden flex flex-col items-center absolute inset-0 justify-center bg-gray-50/90 rounded-lg">
+                                                <FileText className="h-8 w-8 text-black mb-2" />
+                                                <span className="text-xs font-medium text-green-600">Uploaded</span>
+                                            </div>
+                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportFront: '' }))} className="absolute top-2 right-2 p-1 bg-white/50 hover:bg-white rounded-full text-black hover:text-red-500 transition-colors">
                                                 <X className="h-4 w-4" />
                                             </button>
                                         </div>
@@ -365,10 +520,21 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                                 {/* Back Image Upload */}
                                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative">
                                     {files['passportBack'] ? (
-                                        <div className="flex flex-col items-center">
-                                            <FileText className="h-8 w-8 text-black mb-2" />
-                                            <span className="text-xs font-medium text-green-600">Uploaded</span>
-                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportBack: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+                                        <div className="flex flex-col items-center relative w-full h-32 justify-center">
+                                            <img
+                                                src={files['passportBack']}
+                                                alt="Passport Back"
+                                                className="w-full h-full object-cover rounded-lg"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                }}
+                                            />
+                                            <div className="hidden flex flex-col items-center absolute inset-0 justify-center bg-gray-50/90 rounded-lg">
+                                                <FileText className="h-8 w-8 text-black mb-2" />
+                                                <span className="text-xs font-medium text-green-600">Uploaded</span>
+                                            </div>
+                                            <button type="button" onClick={() => setFiles(prev => ({ ...prev, passportBack: '' }))} className="absolute top-2 right-2 p-1 bg-white/50 hover:bg-white rounded-full text-black hover:text-red-500 transition-colors">
                                                 <X className="h-4 w-4" />
                                             </button>
                                         </div>
@@ -389,23 +555,34 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-sm font-semibold text-gray-900">Visa Type</label>
-                                    <input {...form.register('visa.type')} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" placeholder="e.g. Work Permit" />
+                                    <input {...form.register('visa.type')} className="w-full mt-1" placeholder="e.g. Work Permit" />
                                 </div>
                                 <div>
                                     <label className="text-sm font-semibold text-gray-900">Country</label>
-                                    <input {...form.register('visa.country')} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" placeholder="Issue Country" />
+                                    <input {...form.register('visa.country')} className="w-full mt-1" placeholder="Issue Country" />
                                 </div>
                                 <div className="col-span-2">
                                     <label className="text-sm font-semibold text-gray-900">Visa Expiry</label>
-                                    <input type="date" {...form.register('visa.expiryDate', { valueAsDate: true })} className="w-full mt-1 rounded-lg border-gray-200 p-2 text-sm" />
+                                    <input type="date" {...form.register('visa.expiryDate', { valueAsDate: true })} className="w-full mt-1" />
                                 </div>
                             </div>
                             <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative">
                                 {files['visaFile'] ? (
-                                    <div className="flex flex-col items-center">
-                                        <FileText className="h-8 w-8 text-black mb-2" />
-                                        <span className="text-xs font-medium text-green-600">Uploaded</span>
-                                        <button type="button" onClick={() => setFiles(prev => ({ ...prev, visaFile: '' }))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+                                    <div className="flex flex-col items-center relative w-full h-32 justify-center">
+                                        <img
+                                            src={files['visaFile']}
+                                            alt="Visa Document"
+                                            className="w-full h-full object-cover rounded-lg"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                            }}
+                                        />
+                                        <div className="hidden flex flex-col items-center absolute inset-0 justify-center bg-gray-50/90 rounded-lg">
+                                            <FileText className="h-8 w-8 text-black mb-2" />
+                                            <span className="text-xs font-medium text-green-600">Uploaded</span>
+                                        </div>
+                                        <button type="button" onClick={() => setFiles(prev => ({ ...prev, visaFile: '' }))} className="absolute top-2 right-2 p-1 bg-white/50 hover:bg-white rounded-full text-black hover:text-red-500 transition-colors">
                                             <X className="h-4 w-4" />
                                         </button>
                                     </div>

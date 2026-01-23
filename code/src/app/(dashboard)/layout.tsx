@@ -2,6 +2,7 @@ import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 
 export default async function DashboardLayout({
     children,
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
                 <Header user={session?.user} />
                 <main className="flex-1 py-8 px-6">
                     <div className="mx-auto max-w-7xl">
+                        <Breadcrumbs />
                         {children}
                     </div>
                 </main>

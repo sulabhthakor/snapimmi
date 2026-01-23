@@ -29,6 +29,10 @@ export const ApplicationSchema = z.object({
     priority: PrioritySchema,
     lastUpdated: z.date(),
     fees: z.number().optional(),
+    tasksCount: z.number().optional(),
+    documentsCount: z.number().optional(),
+    paymentsCount: z.number().optional(),
+    totalPaid: z.number().optional(),
 });
 
 export type Application = z.infer<typeof ApplicationSchema>;
@@ -72,8 +76,14 @@ export const CreateApplicationRequestSchema = z.object({
         number: z.string().min(1, "Passport Number is required"),
         country: z.string().min(2, "Country is required"),
         expiryDate: z.date(),
-        fileUrl: z.string().optional(), // Front Image
-        backFileUrl: z.string().optional(), // Back Image
+        // Front Image
+        fileUrl: z.string().optional(),
+        fileSize: z.number().optional(),
+        mimeType: z.string().optional(),
+        // Back Image 
+        backFileUrl: z.string().optional(),
+        backFileSize: z.number().optional(),
+        backMimeType: z.string().optional(),
     }).optional(),
 
     visa: z.object({
@@ -81,6 +91,8 @@ export const CreateApplicationRequestSchema = z.object({
         country: z.string().min(1, "Country is required"),
         expiryDate: z.date(),
         fileUrl: z.string().optional(),
+        fileSize: z.number().optional(),
+        mimeType: z.string().optional(),
     }).optional(),
 });
 

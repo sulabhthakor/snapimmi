@@ -2,25 +2,96 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #09090b;
+  /* Zinc 950 */
+
+  --primary: #0f172a;
+  /* Slate 900 */
+  --primary-foreground: #f8fafc;
+  /* Slate 50 */
+
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --secondary-foreground: #0f172a;
+  /* Slate 900 */
+
+  --muted: #f1f5f9;
+  /* Slate 100 */
+  --muted-foreground: #64748b;
+  /* Slate 500 */
+
+  --accent: #f1f5f9;
+  /* Slate 100 */
+  --accent-foreground: #0f172a;
+  /* Slate 900 */
+
+  --destructive: #ef4444;
+  /* Red 500 */
+  --destructive-foreground: #f8fafc;
+  /* Slate 50 */
+
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  /* Slate 200 */
+  --ring: #0f172a;
+  /* Slate 900 */
+  --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius: var(--radius);
+  --font-sans: var(--font-inter);
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+
+  input[type='text'],
+  input:not([type]),
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='date'],
+  input[type='tel'],
+  input[type='search'],
+  textarea,
+  select {
+    @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-black/5 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm;
   }
-} */
+
+  input[type='checkbox'] {
+    @apply h-5 w-5 rounded-md border-gray-300 text-black focus:ring-black/5 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
+  }
+
+  input[type='radio'] {
+    @apply h-5 w-5 border-gray-300 text-black focus:ring-black/5 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+}
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

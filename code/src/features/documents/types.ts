@@ -20,7 +20,9 @@ export const DocumentSchema = z.object({
     mimeType: z.string(),
     uploadedAt: z.date(),
     customerId: z.string(),
-    customerName: z.string().optional(), // For global view
+    customerName: z.string().nullable().optional(), // For global view
+    applicationId: z.string().nullable().optional(),
+    applicationName: z.string().nullable().optional(),
 });
 
 export type Document = z.infer<typeof DocumentSchema>;

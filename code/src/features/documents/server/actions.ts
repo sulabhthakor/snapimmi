@@ -5,15 +5,26 @@ import { Document } from '../types';
 import { revalidatePath } from 'next/cache';
 import { auth } from "@/auth";
 
-export async function getDocuments(firmId: string) {
+export async function getDocuments(
+    firmId: string,
+    filters?: { customerId?: string; applicationId?: string; category?: string; search?: string }
+) {
+    const where: any = {
+        customer: { firmId }
+    };
+
+    if (filters?.customerId) where.customerId = filters.customerId;
+    if (filters?.applicationId) where.applicationId = filters.applicationId;
+    if (filters?.category && filters.category !== 'ALL') where.category = filters.category;
+    if (filters?.search) {
+        where.name = { contains: filters.search, mode: 'insensitive' };
+    }
+
     const docs = await prisma.document.findMany({
-        where: {
-            customer: {
-                firmId: firmId
-            }
-        },
+        where,
         include: {
-            customer: { select: { fullName: true } }
+            customer: { select: { fullName: true } },
+            application: { select: { visaType: true, targetCountry: true } }
         },
         orderBy: { uploadedAt: 'desc' }
     });
@@ -27,7 +38,9 @@ export async function getDocuments(firmId: string) {
         mimeType: d.mimeType,
         uploadedAt: d.uploadedAt,
         customerId: d.customerId,
-        customerName: d.customer.fullName
+        customerName: d.customer.fullName,
+        applicationId: d.applicationId,
+        applicationName: d.application ? `${d.application.visaType} - ${d.application.targetCountry}` : undefined
     }));
 }
 

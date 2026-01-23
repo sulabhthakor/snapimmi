@@ -5,7 +5,7 @@ CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'FIRM_OWNER', 'AGENT');
 CREATE TYPE "FirmStatus" AS ENUM ('ACTIVE', 'SUSPENDED', 'PENDING_VERIFICATION');
 
 -- CreateEnum
-CREATE TYPE "AppStatus" AS ENUM ('LEAD', 'DOCS_COLLECTED', 'APPLIED', 'BIOMETRICS', 'APPROVED', 'REJECTED');
+CREATE TYPE "AppStatus" AS ENUM ('PENDING', 'DOCUMENTS_COLLECTED', 'APPLIED', 'APPROVED', 'REJECTED', 'LEAD', 'DOCS_COLLECTED', 'BIOMETRICS');
 
 -- CreateTable
 CREATE TABLE "Firm" (
@@ -78,6 +78,7 @@ CREATE TABLE "Passport" (
     "country" TEXT NOT NULL,
     "issueDate" TIMESTAMP(3) NOT NULL,
     "expiryDate" TIMESTAMP(3) NOT NULL,
+    "placeOfIssue" TEXT,
     "frontImage" TEXT,
     "backImage" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -111,7 +112,7 @@ CREATE TABLE "Application" (
     "customerId" TEXT NOT NULL,
     "targetCountry" TEXT NOT NULL,
     "visaType" TEXT NOT NULL,
-    "status" "AppStatus" NOT NULL DEFAULT 'LEAD',
+    "status" "AppStatus" NOT NULL DEFAULT 'PENDING',
     "priority" TEXT NOT NULL DEFAULT 'MEDIUM',
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

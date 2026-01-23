@@ -18,6 +18,8 @@ import { Application, ApplicationStatus, STATUS_LABELS } from '../types';
 import { KanbanCard } from './KanbanCard';
 import { updateApplicationStatus } from '../server/actions';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface KanbanBoardProps {
     initialData: Application[];
@@ -29,6 +31,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const [applications, setApplications] = useState<Application[]>(initialData);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
@@ -94,7 +97,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
         }
     };
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveId(null);
 
@@ -102,8 +105,16 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
 
         const activeApp = applications.find(x => x.id === active.id);
         if (activeApp) {
-            // In real world, we would persist the order here too
-            updateApplicationStatus(activeApp.id, activeApp.status);
+            // Attempt update
+            const result = await updateApplicationStatus(activeApp.id, activeApp.status);
+
+            if (!result.success) {
+                toast.error(result.error || "Failed to update status");
+                // Revert UI by refreshing data from server (which has the old/correct state)
+                router.refresh();
+            } else {
+                toast.success("Status updated");
+            }
         }
     };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { UpdateCustomerRequestSchema, PassportSchema } from '../types';
@@ -11,6 +11,7 @@ import { Loader2, Save, User, FileText, Users, FolderClosed, ArrowLeft } from 'l
 import { format } from 'date-fns';
 import { DocumentVault } from '@/features/documents/components/DocumentVault';
 import { toast } from 'sonner';
+import { DateInput } from '@/components/ui/DateInput';
 
 type CustomerData = any; // Ideally import fully joined type
 
@@ -147,16 +148,16 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Full Name</label>
-                                <input {...profileForm.register('fullName')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="text" {...profileForm.register('fullName')} />
                                 {profileForm.formState.errors.fullName && <p className="text-red-500 text-xs">{profileForm.formState.errors.fullName.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Phone</label>
-                                <input {...profileForm.register('phone')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="tel" {...profileForm.register('phone')} />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Email</label>
-                                <input {...profileForm.register('email')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="email" {...profileForm.register('email')} />
                             </div>
                         </div>
                     </div>
@@ -166,23 +167,43 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Passport Number</label>
-                                <input {...profileForm.register('passport.number')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 uppercase placeholder:normal-case focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="text" {...profileForm.register('passport.number')} className="uppercase placeholder:normal-case" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Issuing Country</label>
-                                <input {...profileForm.register('passport.country')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="text" {...profileForm.register('passport.country')} />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-900">Issue Date</label>
-                                <input type="date" {...profileForm.register('passport.issueDate', { valueAsDate: true })} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <Controller
+                                    control={profileForm.control}
+                                    name="passport.issueDate"
+                                    render={({ field }) => (
+                                        <DateInput
+                                            label="Issue Date"
+                                            value={field.value ? new Date(field.value) : undefined}
+                                            onChange={field.onChange}
+                                            placeholder="DD-MM-YY"
+                                        />
+                                    )}
+                                />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-900">Expiry Date</label>
-                                <input type="date" {...profileForm.register('passport.expiryDate', { valueAsDate: true })} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <Controller
+                                    control={profileForm.control}
+                                    name="passport.expiryDate"
+                                    render={({ field }) => (
+                                        <DateInput
+                                            label="Expiry Date"
+                                            value={field.value ? new Date(field.value) : undefined}
+                                            onChange={field.onChange}
+                                            placeholder="DD-MM-YY"
+                                        />
+                                    )}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-900">Place of Issue</label>
-                                <input {...profileForm.register('passport.placeOfIssue')} className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black focus:ring-1 focus:ring-black shadow-sm" />
+                                <input type="text" {...profileForm.register('passport.placeOfIssue')} />
                             </div>
                         </div>
                     </div>
@@ -202,7 +223,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
                         <div className="space-y-4">
                             <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${familyForm.watch('isFamilyHead') ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                                <input type="checkbox" {...familyForm.register('isFamilyHead')} className="mt-1 h-5 w-5 text-black border-gray-300 rounded focus:ring-black" />
+                                <input type="checkbox" {...familyForm.register('isFamilyHead')} className="mt-1" />
                                 <div>
                                     <div className="font-semibold text-gray-900">Set as Family Head</div>
                                     <div className="text-sm text-gray-500">This customer will be the primary contact for a new family group.</div>
@@ -211,7 +232,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
 
                             <div className={`relative p-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 transition-opacity ${familyForm.watch('isFamilyHead') ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                 <h3 className="text-sm font-semibold text-gray-900 mb-2">Join Existing Family</h3>
-                                <input {...familyForm.register('existingFamilyId')} placeholder="Search family name or enter ID..." className="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-black shadow-sm" />
+                                <input type="text" {...familyForm.register('existingFamilyId')} placeholder="Search family name or enter ID..." />
                                 <p className="text-xs text-gray-500 mt-2">Leave blank if this is an individual customer.</p>
                             </div>
                         </div>
