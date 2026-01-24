@@ -185,6 +185,57 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column (Sticky info? maybe) */}
                 <div className="space-y-6">
+                    {/* Passport Widget */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                Active Passport
+                            </h3>
+                            <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                        </div>
+                        {customer.passports?.[0] ? (
+                            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="text-lg font-mono font-bold text-blue-900">{customer.passports[0].number}</div>
+                                    <div className="text-xl">🇮🇳</div>
+                                </div>
+                                <div className="text-xs text-blue-700">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                                <p className="text-xs text-gray-400 mb-2">No passport added</p>
+                                <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Visa Widget */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                Active Visa
+                            </h3>
+                            <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                        </div>
+                        {customer.visas?.[0] ? (
+                            <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="text-lg font-mono font-bold text-green-900">{customer.visas[0].number || 'No Number'}</div>
+                                    <div className="text-xs font-bold px-2 py-1 bg-white rounded text-green-700 shadow-sm">{customer.visas[0].type}</div>
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <div className="text-xs text-green-700">Expires: {new Date(customer.visas[0].expiryDate).toLocaleDateString()}</div>
+                                    <div className="text-xs font-medium text-green-800">{customer.visas[0].country}</div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                                <p className="text-xs text-gray-400 mb-2">No visa added</p>
+                                <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Family Group Widget */}
                     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
@@ -239,30 +290,6 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                                 >
                                     Create Group
                                 </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Passport Widget */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                Active Passport
-                            </h3>
-                            <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
-                        </div>
-                        {customer.passports?.[0] ? (
-                            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="text-lg font-mono font-bold text-blue-900">{customer.passports[0].number}</div>
-                                    <div className="text-xl">🇮🇳</div>
-                                </div>
-                                <div className="text-xs text-blue-700">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
-                                <p className="text-xs text-gray-400 mb-2">No passport added</p>
-                                <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
                             </div>
                         )}
                     </div>
@@ -475,6 +502,6 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

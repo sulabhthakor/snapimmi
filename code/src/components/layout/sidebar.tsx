@@ -21,7 +21,7 @@ const navigation = {
     ]
 };
 
-export function Sidebar({ firmId }: { firmId: string }) {
+export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: string }) {
     const pathname = usePathname();
 
     const handleSignOut = async () => {

@@ -163,14 +163,38 @@ async function getDashboardStats(firmId: string) {
 
 export default async function DashboardPage({ params }: { params: Promise<{ firmId: string }> }) {
     const { firmId } = await params;
-    const stats = await getDashboardStats(firmId);
+
+    // 🚨 SPECIAL CASE: Super Admin Dashboard
+    if (firmId === 'admin') {
+        return (
+            <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Super Admin Dashboard</h1>
+                        <p className="text-gray-600 mt-1">Platform overview.</p>
+                    </div>
+                </div>
+                <div className="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <p>Welcome, Administrator. Global stats coming soon.</p>
+                </div>
+            </div>
+        )
+    }
+
+    const [stats, firm] = await Promise.all([
+        getDashboardStats(firmId),
+        prisma.firm.findUnique({
+            where: { id: firmId },
+            select: { name: true }
+        })
+    ]);
 
     return (
         <div className="space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">{firm?.name} Dashboard</h1>
                     <p className="text-gray-600 mt-1">Welcome back, here's what's happening today.</p>
                 </div>
                 <div className="flex gap-3">

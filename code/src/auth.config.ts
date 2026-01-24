@@ -31,6 +31,16 @@ export const authConfig = {
                 token.firmId = user.firmId;
                 // @ts-ignore
                 token.role = user.role;
+                // @ts-ignore
+                token.firmStatus = user.firmStatus;
+                // @ts-ignore
+                token.mustChangePassword = (user as any).mustChangePassword;
+            }
+
+            if (trigger === "update" && session) {
+                // Update token with new session data
+                token.name = session.user.name;
+                // Add any other fields that might be updated here
             }
             return token;
         },
@@ -42,6 +52,10 @@ export const authConfig = {
                 session.user.firmId = token.firmId;
                 // @ts-ignore
                 session.user.role = token.role;
+                // @ts-ignore
+                session.user.firmStatus = token.firmStatus;
+                // @ts-ignore
+                session.user.mustChangePassword = token.mustChangePassword;
             }
             return session;
         },

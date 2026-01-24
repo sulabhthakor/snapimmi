@@ -15,7 +15,7 @@ type Notification = {
     createdAt: Date;
 };
 
-export function NotificationBell({ firmId }: { firmId: string }) {
+export function NotificationBell({ firmId }: { firmId?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [hasUnread, setHasUnread] = useState(false);

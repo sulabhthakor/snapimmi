@@ -391,6 +391,10 @@ export function NewCustomerWizard() {
                                         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
+                                                    <label className="text-xs font-semibold text-gray-900">Visa Number</label>
+                                                    <input {...step2Form.register('visa.number')} className="w-full" placeholder="e.g. V1234567" />
+                                                </div>
+                                                <div className="space-y-1">
                                                     <label className="text-xs font-semibold text-gray-900">Type <span className="text-red-500">*</span></label>
                                                     <Controller
                                                         name="visa.type"
@@ -406,6 +410,8 @@ export function NewCustomerWizard() {
                                                     />
                                                     {step2Form.formState.errors.visa?.type && <p className="text-red-500 text-xs text-right">Required</p>}
                                                 </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-xs font-semibold text-gray-900">Country <span className="text-red-500">*</span></label>
                                                     <Controller

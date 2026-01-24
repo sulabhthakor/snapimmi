@@ -14,7 +14,7 @@ interface TeamMember {
     lastLogin: Date | null;
 }
 
-export function TeamList({ firmId, members }: { firmId: string, members: TeamMember[] }) {
+export function TeamList({ firmId, members, currentUserRole }: { firmId: string, members: TeamMember[], currentUserRole?: string }) {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const router = useRouter();
 
@@ -29,13 +29,15 @@ export function TeamList({ firmId, members }: { firmId: string, members: TeamMem
                     <h2 className="text-lg font-bold text-gray-900">Team Members</h2>
                     <p className="text-sm text-gray-500">Manage who has access to your firm dashboard.</p>
                 </div>
-                <button
-                    onClick={() => setIsAddOpen(true)}
-                    className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all shadow-sm"
-                >
-                    <UserPlus className="h-4 w-4" />
-                    Add Member
-                </button>
+                {currentUserRole === 'FIRM_OWNER' && (
+                    <button
+                        onClick={() => setIsAddOpen(true)}
+                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all shadow-sm"
+                    >
+                        <UserPlus className="h-4 w-4" />
+                        Add Member
+                    </button>
+                )}
             </div>
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">

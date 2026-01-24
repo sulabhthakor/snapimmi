@@ -2,10 +2,18 @@
 
 import { useState, useCallback, useTransition } from 'react';
 import { Customer } from '../types';
-import { getCustomers } from '../server/actions';
+import { getCustomers, deleteCustomer } from '../server/actions';
 import { useParams, useRouter } from 'next/navigation';
 import { Search, Plus, Filter, MoreHorizontal, FileText, FolderClosed } from 'lucide-react';
 import Link from 'next/link';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { CustomSelect } from '@/components/ui/CustomSelect';
 
@@ -159,9 +167,42 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                                         </Link>
                                     </td>
                                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                        <button className="text-gray-400 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-full">
-                                            <MoreHorizontal className="h-5 w-5" />
-                                        </button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="text-gray-400 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-full focus:outline-none data-[state=open]:bg-gray-100 data-[state=open]:text-black">
+                                                    <MoreHorizontal className="h-5 w-5" />
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-[160px]">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => router.push(`/dashboard/${firmId}/customers/${customer.id}`)}>
+                                                    View Details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/dashboard/${firmId}/customers/${customer.id}/edit`)}>
+                                                    Edit Customer
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-red-600 focus:text-red-600"
+                                                    onClick={() => {
+                                                        if (confirm('Are you sure you want to delete this customer?')) {
+                                                            startTransition(async () => {
+                                                                const result = await deleteCustomer(customer.id);
+                                                                if (result.success) {
+                                                                    // @ts-ignore
+                                                                    setCustomers(prev => prev.filter(c => c.id !== customer.id));
+                                                                    setTotalCustomers(prev => prev - 1);
+                                                                } else {
+                                                                    alert(result.error);
+                                                                }
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </td>
                                 </tr>
                             ))}

@@ -5,7 +5,7 @@ import { Search, Command, Users, FileText, File, Loader2, ChevronRight, ArrowUpR
 import { useRouter } from 'next/navigation';
 import { globalSearch } from '@/features/search/server/actions'; // Adjust import if needed based on alias
 
-export function GlobalSearch({ firmId }: { firmId: string }) {
+export function GlobalSearch({ firmId }: { firmId?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<any>(null);

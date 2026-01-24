@@ -22,6 +22,7 @@ export const PassportSchema = z.object({
 
 export const VisaSchema = z.object({
     country: z.string().min(2, "Country is required"),
+    number: z.string().optional(), // Visa Number
     type: z.string().min(2, "Visa Type is required"), // e.g. Student, Work
     grantDate: z.coerce.date().optional(),
     expiryDate: z.coerce.date(),

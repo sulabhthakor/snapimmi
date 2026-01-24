@@ -20,5 +20,6 @@ export const COUNTRIES = [
     'UAE (Dubai)',
     'Singapore',
     'Ireland',
-    'Schengen'
+    'Schengen',
+    'India'
 ] as const;

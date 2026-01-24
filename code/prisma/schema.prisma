@@ -69,6 +69,7 @@ model User {
   password  String    // Argon2 hashed
   role      Role      @default(AGENT)
   isActive  Boolean   @default(true)
+  mustChangePassword Boolean @default(false)
   
   lastLogin DateTime?
   
@@ -156,6 +157,7 @@ model Visa {
   customer    Customer  @relation(fields: [customerId], references: [id])
   
   country     String
+  number      String?   // Visa Number
   type        String    // e.g. "Work", "Tourist"
   grantDate   DateTime?
   expiryDate  DateTime
@@ -326,4 +328,49 @@ model Notification {
   
   @@index([userId, isRead])
   @@index([firmId])
+}
+
+// --- MASTER DATA MODELS ---
+
+model Country {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  code        String    @unique // ISO code (e.g., IN, US, CA)
+  isActive    Boolean   @default(true)
+  
+  visaTypes   GlobalVisaType[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model GlobalVisaType {
+  id          String    @id @default(uuid())
+  countryId   String
+  country     Country   @relation(fields: [countryId], references: [id])
+  
+  name        String    // e.g. "Study Permit", "H1B"
+  category    String?   // "Work", "Education", "Tourist"
+  description String?   @db.Text
+  
+  processingTime String? // e.g. "4-6 weeks"
+  governmentFee  Decimal? @db.Decimal(10, 2)
+  currency       String?  @default("USD")
+  
+  isActive    Boolean   @default(true)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([countryId])
+}
+
+// --- SYSTEM SETTINGS ---
+
+model SystemSettings {
+  id                String   @id @default(cuid())
+  maintenanceMode   Boolean  @default(false)
+  allowRegistrations Boolean @default(true)
+  systemBannerText  String?
+  updatedAt         DateTime @updatedAt
 }

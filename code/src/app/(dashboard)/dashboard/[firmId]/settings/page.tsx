@@ -91,7 +91,7 @@ export default async function SettingsPage({ params }: { params: { firmId: strin
                                 <p className="text-sm text-gray-500">Invite and manage team members.</p>
                             </div>
                         </div>
-                        <TeamList firmId={firmId} members={members} />
+                        <TeamList firmId={firmId} members={members} currentUserRole={session.user.role} />
                     </div>
                 </div>
             </div>

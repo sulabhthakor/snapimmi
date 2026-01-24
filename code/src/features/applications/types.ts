@@ -88,6 +88,7 @@ export const CreateApplicationRequestSchema = z.object({
 
     visa: z.object({
         type: z.string().min(1, "Visa Type is required"),
+        number: z.string().optional(),
         country: z.string().min(1, "Country is required"),
         expiryDate: z.date(),
         fileUrl: z.string().optional(),

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
+import { auth } from "@/auth";
 
 export async function getRevenueStats(firmId: string) {
     const now = new Date();
@@ -276,17 +277,47 @@ export async function updatePayment(data: {
 
 export async function refundPayment(paymentId: string, reason?: string) {
     try {
-        // Update payment status to REFUNDED
+        const session = await auth();
+        // @ts-ignore
+        const userId = session?.user?.id;
+        // @ts-ignore
+        const firmId = session?.user?.firmId;
+
+        // 1. Update payment status to REFUNDED
         const payment = await prisma.payment.update({
             where: { id: paymentId },
             data: {
                 status: 'REFUNDED',
-                notes: reason ? `REFUNDED: ${reason}` : 'REFUNDED'
+                notes: reason ? `REFUNDED: ${reason}` : 'REFUNDED',
+                updatedAt: new Date()
+            },
+            include: { application: true }
+        });
+
+        // 2. Add Note to Application (Audit Trail)
+        const refundNote = `\n[System] Payment of ${payment.amount} refunded on ${new Date().toLocaleDateString()}. Reason: ${reason || 'N/A'}`;
+        await prisma.application.update({
+            where: { id: payment.applicationId },
+            data: {
+                notes: (payment.application.notes || '') + refundNote
             }
         });
 
-        // TODO: Create separate refund record if needed
-        // TODO: Update application's total paid amount
+        // 3. Log Activity
+        if (firmId && userId) {
+            await prisma.activityLog.create({
+                data: {
+                    firmId,
+                    userId,
+                    action: 'REFUND_PAYMENT',
+                    details: {
+                        paymentId,
+                        amount: payment.amount.toNumber(),
+                        reason
+                    }
+                }
+            });
+        }
 
         return { success: true, payment: { ...payment, amount: payment.amount.toNumber() } };
     } catch (error) {

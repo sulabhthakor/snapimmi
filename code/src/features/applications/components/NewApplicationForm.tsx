@@ -554,6 +554,10 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                             <h3 className="text-lg font-bold text-gray-900">Current Visa (Optional)</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
+                                    <label className="text-sm font-semibold text-gray-900">Visa Number</label>
+                                    <input {...form.register('visa.number')} className="w-full mt-1" placeholder="V1234567" />
+                                </div>
+                                <div>
                                     <label className="text-sm font-semibold text-gray-900">Visa Type</label>
                                     <input {...form.register('visa.type')} className="w-full mt-1" placeholder="e.g. Work Permit" />
                                 </div>
@@ -561,7 +565,7 @@ export function NewApplicationForm({ firmId }: { firmId: string }) {
                                     <label className="text-sm font-semibold text-gray-900">Country</label>
                                     <input {...form.register('visa.country')} className="w-full mt-1" placeholder="Issue Country" />
                                 </div>
-                                <div className="col-span-2">
+                                <div>
                                     <label className="text-sm font-semibold text-gray-900">Visa Expiry</label>
                                     <input type="date" {...form.register('visa.expiryDate', { valueAsDate: true })} className="w-full mt-1" />
                                 </div>

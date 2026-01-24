@@ -4,12 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
-export async function getNotifications(firmId: string) {
+export async function getNotifications(firmId?: string) {
     const session = await auth();
     // @ts-ignore
     const userId = session?.user?.id;
 
-    if (!userId) return [];
+    if (!userId || !firmId) return [];
 
     return await prisma.notification.findMany({
         where: {
@@ -38,11 +38,11 @@ export async function markAsRead(notificationId: string) {
     }
 }
 
-export async function markAllAsRead(firmId: string) {
+export async function markAllAsRead(firmId?: string) {
     const session = await auth();
     // @ts-ignore
     const userId = session?.user?.id;
-    if (!userId) return { success: false };
+    if (!userId || !firmId) return { success: false };
 
     try {
         await prisma.notification.updateMany({

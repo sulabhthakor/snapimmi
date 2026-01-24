@@ -100,7 +100,8 @@ export async function deleteDocument(documentId: string) {
 export async function createDocument(
     customerId: string,
     category: string,
-    files: { name: string; fileUrl: string; fileSize: number; mimeType: string }[]
+    files: { name: string; fileUrl: string; fileSize: number; mimeType: string }[],
+    applicationId?: string
 ) {
     const session = await auth();
     // @ts-ignore
@@ -119,6 +120,7 @@ export async function createDocument(
                         fileUrl: file.fileUrl,
                         fileSize: file.fileSize,
                         mimeType: file.mimeType,
+                        applicationId: applicationId || undefined
                     }
                 })
             )

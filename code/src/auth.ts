@@ -13,7 +13,18 @@ async function getUser(email: string) {
             where: { email },
             include: { firm: true }
         });
-        return user;
+
+        if (user) {
+            // Flatten generic user object for NextAuth
+            return {
+                ...user,
+                firmId: user.firmId,
+                firmStatus: user.firm?.status,
+                // @ts-ignore
+                mustChangePassword: (user as any).mustChangePassword, // Include this flag
+            } as any;
+        }
+        return null;
     } catch (error) {
         console.error('Failed to fetch user:', error);
         throw new Error('Failed to fetch user.');

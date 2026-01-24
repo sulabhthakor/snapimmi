@@ -8,6 +8,7 @@ import { updateProfile } from '../actions';
 import { Loader2, CheckCircle2, Save, User, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 const ProfileSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -16,6 +17,7 @@ const ProfileSchema = z.object({
 export function ProfileForm({ user }: { user: { name: string; email: string } }) {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+    const { update } = useSession();
 
     const form = useForm({
         resolver: zodResolver(ProfileSchema),
@@ -28,6 +30,9 @@ export function ProfileForm({ user }: { user: { name: string; email: string } })
         startTransition(async () => {
             const result = await updateProfile(data);
             if (result.success) {
+                // Update session on client (triggers jwt callback with update)
+                await update({ user: { name: data.name } });
+
                 toast.success('Profile updated successfully');
                 router.refresh(); // Update the UI including the user menu
             } else {

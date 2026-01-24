@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { addDays, startOfDay, endOfDay } from "date-fns";
 
 export type ExpiryResult = {
+    firmId: string;
+    customerId: string;
     customerName: string;
     customerEmail: string;
     customerPhone: string;
@@ -11,7 +13,7 @@ export type ExpiryResult = {
     docId: string;
 };
 
-export async function checkExpiringDocuments() {
+export async function checkExpiringDocuments(firmId?: string) {
     const today = new Date();
 
     // Define thresholds
@@ -23,54 +25,70 @@ export async function checkExpiringDocuments() {
         const targetDateStart = startOfDay(addDays(today, days));
         const targetDateEnd = endOfDay(addDays(today, days));
 
-        const passports = await prisma.passport.findMany({
-            where: {
-                expiryDate: {
-                    gte: targetDateStart,
-                    lte: targetDateEnd
-                },
-                customer: { deletedAt: null }
+        const where: any = {
+            expiryDate: {
+                gte: targetDateStart,
+                lte: targetDateEnd
             },
+            customer: { deletedAt: null }
+        };
+
+        if (firmId) {
+            where.customer.firmId = firmId;
+        }
+
+        const passports = await prisma.passport.findMany({
+            where,
             include: { customer: true }
         });
 
         passports.forEach(p => {
             results.push({
+                firmId: p.customer.firmId,
+                customerId: p.customerId,
                 customerName: p.customer.fullName,
                 customerEmail: p.customer.email || '',
                 customerPhone: p.customer.phone || '',
                 type: 'Passport',
                 expiryDate: p.expiryDate,
                 daysLeft: days,
-                docId: p.id
+                docId: `passport-${p.id}`
             });
         });
 
         // 2. Check Visas
-        const visas = await prisma.visa.findMany({
-            where: {
-                expiryDate: {
-                    gte: targetDateStart,
-                    lte: targetDateEnd
-                },
-                status: 'Active',
-                customer: { deletedAt: null }
+        const visaWhere: any = {
+            expiryDate: {
+                gte: targetDateStart,
+                lte: targetDateEnd
             },
+            status: { equals: 'Active', mode: 'insensitive' },
+            customer: { deletedAt: null }
+        };
+
+        if (firmId) {
+            visaWhere.customer.firmId = firmId;
+        }
+
+        const visas = await prisma.visa.findMany({
+            where: visaWhere,
             include: { customer: true }
         });
 
         visas.forEach(v => {
             results.push({
+                firmId: v.customer.firmId,
+                customerId: v.customerId,
                 customerName: v.customer.fullName,
                 customerEmail: v.customer.email || '',
                 customerPhone: v.customer.phone || '',
                 type: 'Visa',
                 expiryDate: v.expiryDate,
                 daysLeft: days,
-                docId: v.id
+                docId: `visa-${v.id}`
             });
         });
     }
 
-    return results;
+    return results.sort((a, b) => a.daysLeft - b.daysLeft);
 }

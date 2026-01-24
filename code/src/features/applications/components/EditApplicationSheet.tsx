@@ -16,6 +16,7 @@ import { RecordPaymentSheet } from '@/features/payments/components/RecordPayment
 import { Timeline } from '@/components/ui/Timeline';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { CustomSelect } from '@/components/ui/CustomSelect';
+import { UploadDropzone } from '@/features/documents/components/UploadDropzone';
 
 interface EditApplicationSheetProps {
     application: Application;
@@ -27,6 +28,7 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'payments' | 'timeline'>('overview');
     const [isPending, startTransition] = useTransition();
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
     const router = useRouter();
 
     // Data State
@@ -279,7 +281,12 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="font-bold text-gray-900">Customer Documents</h3>
-                                        {/* TODO: Add Upload specifically for this app */}
+                                        <button
+                                            onClick={() => setIsUploadOpen(true)}
+                                            className="text-xs bg-black text-white px-3 py-1.5 rounded-lg font-medium hover:bg-gray-800 flex items-center gap-1"
+                                        >
+                                            <Plus className="h-3 w-3" /> Upload
+                                        </button>
                                     </div>
 
                                     {details?.customer?.documents?.length > 0 ? (
@@ -408,6 +415,24 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
                     router.refresh();
                 }}
             />
+
+            {isUploadOpen && (
+                <UploadDropzone
+                    customerId={application.customerId}
+                    applicationId={application.id}
+                    defaultCategory="Application"
+                    onClose={() => {
+                        setIsUploadOpen(false);
+                        if (application.id) {
+                            startTransition(async () => {
+                                const data = await getApplicationDetails(application.id);
+                                setDetails(data);
+                            });
+                        }
+                        router.refresh();
+                    }}
+                />
+            )}
         </div >
     );
 }

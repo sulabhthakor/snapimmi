@@ -234,6 +234,7 @@ export async function createApplication(data: z.infer<typeof import("../types").
                     data: {
                         customerId,
                         country: visa.country,
+                        number: visa.number,
                         type: visa.type,
                         status: 'Active',
                         expiryDate: visa.expiryDate,

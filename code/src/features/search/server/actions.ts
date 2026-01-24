@@ -2,8 +2,8 @@
 
 import { prisma } from '@/lib/prisma';
 
-export async function globalSearch(firmId: string, query: string) {
-    if (!query || query.length < 2) return null;
+export async function globalSearch(firmId: string | undefined, query: string) {
+    if (!firmId || !query || query.length < 2) return null;
 
     const [customers, applications, documents] = await Promise.all([
         prisma.customer.findMany({

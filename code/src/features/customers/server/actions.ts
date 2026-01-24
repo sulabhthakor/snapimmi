@@ -136,6 +136,7 @@ export async function createCustomer(data: z.infer<typeof CreateCustomerRequestS
                     data: {
                         customerId: customer.id,
                         country: visa.country,
+                        number: visa.number,
                         type: visa.type,
                         grantDate: visa.grantDate,
                         expiryDate: visa.expiryDate,
@@ -327,7 +328,8 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
                         data: {
                             grantDate: visa.grantDate,
                             expiryDate: visa.expiryDate,
-                            fileUrl: visa.fileUrl
+                            fileUrl: visa.fileUrl,
+                            number: visa.number
                         }
                     });
                 } else {
@@ -335,6 +337,7 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
                         data: {
                             customerId: id,
                             country: visa.country,
+                            number: visa.number,
                             type: visa.type,
                             grantDate: visa.grantDate,
                             expiryDate: visa.expiryDate,
@@ -370,9 +373,9 @@ export async function deleteCustomer(customerId: string) {
         return { success: false, error: "Unauthorized" };
     }
 
-    // RBAC: Only ADMIM can delete
-    if (role !== 'ADMIN') {
-        return { success: false, error: "Permission Denied: Only Admins can delete customers." };
+    // RBAC: Only ADMIN or FIRM_OWNER can delete
+    if (role !== 'FIRM_OWNER' && role !== 'SUPER_ADMIN') {
+        return { success: false, error: "Permission Denied: Only Firm Owners can delete customers." };
     }
 
     try {
