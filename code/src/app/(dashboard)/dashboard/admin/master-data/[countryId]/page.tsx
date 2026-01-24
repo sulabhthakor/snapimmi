@@ -72,7 +72,7 @@ export default async function CountryDetailPage({ params }: { params: { countryI
                                 <td className="px-6 py-4 text-gray-500">
                                     <div className="flex items-center gap-1.5">
                                         <Banknote className="h-3 w-3" />
-                                        {visa.currency} {visa.governmentFee}
+                                        {visa.currency} {visa.governmentFee?.toString()}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
