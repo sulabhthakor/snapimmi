@@ -62,12 +62,8 @@ services:
     ports:
       - "3002:3000"
     restart: always
-    environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/visa_saas
-      # Add other necessary environment variables here
-      AUTH_TRUST_HOST: "true"
-      AUTH_URL: "https://si.snapdecode.in"
-      AUTH_SECRET: "supersecuresecretthatshouldbechanged" # Added for NextAuth v5
+    env_file:
+      - ./code/.env.docker
     depends_on:
       - postgres
       - redis
