@@ -180,7 +180,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                                     render={({ field }) => (
                                         <DateInput
                                             label="Issue Date"
-                                            value={field.value ? new Date(field.value) : undefined}
+                                            value={field.value instanceof Date ? field.value : (typeof field.value === 'string' ? new Date(field.value) : undefined)}
                                             onChange={field.onChange}
                                             placeholder="DD-MM-YY"
                                         />
@@ -194,7 +194,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                                     render={({ field }) => (
                                         <DateInput
                                             label="Expiry Date"
-                                            value={field.value ? new Date(field.value) : undefined}
+                                            value={field.value instanceof Date ? field.value : (typeof field.value === 'string' ? new Date(field.value) : undefined)}
                                             onChange={field.onChange}
                                             placeholder="DD-MM-YY"
                                         />

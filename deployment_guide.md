@@ -49,18 +49,14 @@ This guide explains exactly how to run the **Snapimmi** project in two different
 
 #### 3. Configure Database Connection (.env)
 *   **Where**: Inside `snapimmi\code`.
-*   **Action**: Create a new file named `.env`.
-*   **Content**: Paste the following configuration (Update credentials if your Postgres password isn't `root`):
+*   **Action**: The `.env` file should already be configured for local development. Verify it contains:
     ```ini
-    # Connect to your local Windows Postgres
-    # Format: postgresql://USER:PASSWORD@HOST:PORT/DB_NAME
+    # Local Development Configuration
     DATABASE_URL="postgresql://postgres:root@localhost:5432/visa_saas?schema=public"
-
-    # Authentication Settings (Required for NextAuth)
+    AUTH_SECRET="dev-secret-key-change-in-production"
     AUTH_TRUST_HOST=true
-    AUTH_URL=http://localhost:3002
-    AUTH_SECRET=dev-secret-key-123
     ```
+*   **Note**: Update the password (`root`) if your Windows PostgreSQL uses a different password.
 
 #### 4. Setup the Database
 *   **Where**: Inside `snapimmi\code`.
