@@ -6,7 +6,9 @@ export const metadata: Metadata = {
     title: "Reports | SnapImmi",
 };
 
-export default function ReportsPage({ params }: { params: { firmId: string } }) {
+export default async function ReportsPage({ params }: { params: Promise<{ firmId: string }> }) {
+    const { firmId } = await params;
+
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-8">
             <div>
@@ -14,7 +16,8 @@ export default function ReportsPage({ params }: { params: { firmId: string } }) 
                 <p className="text-gray-500 mt-1">Generate and download data exports for your firm.</p>
             </div>
 
-            <ReportsView firmId={params.firmId} />
+            <ReportsView firmId={firmId} />
         </div>
     );
 }
+

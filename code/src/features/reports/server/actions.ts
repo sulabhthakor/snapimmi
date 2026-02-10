@@ -13,9 +13,17 @@ const escapeCsv = (field: any) => {
     return stringField;
 };
 
-export async function generateCustomerReport(firmId: string) {
+export async function generateCustomerReport(firmId: string, from?: string, to?: string) {
+    const whereClause: any = { firmId, deletedAt: null };
+
+    if (from || to) {
+        whereClause.createdAt = {};
+        if (from) whereClause.createdAt.gte = new Date(from);
+        if (to) whereClause.createdAt.lte = new Date(to);
+    }
+
     const customers = await prisma.customer.findMany({
-        where: { firmId, deletedAt: null },
+        where: whereClause,
         include: {
             _count: {
                 select: { applications: true, documents: true }
@@ -45,10 +53,17 @@ export async function generateCustomerReport(firmId: string) {
     return { filename: `customers_${format(new Date(), 'yyyy-MM-dd')}.csv`, content: csvContent };
 }
 
-export async function generateFinancialReport(firmId: string) {
-    // defaults to current year/all time for now for simplicity
+export async function generateFinancialReport(firmId: string, from?: string, to?: string) {
+    const whereClause: any = { firmId, status: 'COMPLETED' };
+
+    if (from || to) {
+        whereClause.paidAt = {};
+        if (from) whereClause.paidAt.gte = new Date(from);
+        if (to) whereClause.paidAt.lte = new Date(to);
+    }
+
     const payments = await prisma.payment.findMany({
-        where: { firmId, status: 'COMPLETED' },
+        where: whereClause,
         include: {
             application: {
                 include: { customer: true }
@@ -77,9 +92,17 @@ export async function generateFinancialReport(firmId: string) {
     return { filename: `financials_${format(new Date(), 'yyyy-MM-dd')}.csv`, content: csvContent };
 }
 
-export async function generateApplicationsReport(firmId: string) {
+export async function generateApplicationsReport(firmId: string, from?: string, to?: string) {
+    const whereClause: any = { firmId, deletedAt: null };
+
+    if (from || to) {
+        whereClause.createdAt = {};
+        if (from) whereClause.createdAt.gte = new Date(from);
+        if (to) whereClause.createdAt.lte = new Date(to);
+    }
+
     const apps = await prisma.application.findMany({
-        where: { firmId, deletedAt: null },
+        where: whereClause,
         include: {
             customer: true
         },

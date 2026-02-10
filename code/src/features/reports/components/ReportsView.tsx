@@ -1,20 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { DateRangePicker } from '@/components/ui/DateRangePicker';
 import { FileDown, Loader2, Users, CreditCard, FileText } from 'lucide-react';
 import { generateCustomerReport, generateFinancialReport, generateApplicationsReport } from '../server/actions';
 import { toast } from 'sonner';
 
 export function ReportsView({ firmId }: { firmId: string }) {
     const [downloading, setDownloading] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const from = searchParams.get('from') || undefined;
+    const to = searchParams.get('to') || undefined;
 
     const handleDownload = async (type: 'customers' | 'financials' | 'applications') => {
         setDownloading(type);
         try {
             let result;
-            if (type === 'customers') result = await generateCustomerReport(firmId);
-            else if (type === 'financials') result = await generateFinancialReport(firmId);
-            else if (type === 'applications') result = await generateApplicationsReport(firmId);
+            if (type === 'customers') result = await generateCustomerReport(firmId, from, to);
+            else if (type === 'financials') result = await generateFinancialReport(firmId, from, to);
+            else if (type === 'applications') result = await generateApplicationsReport(firmId, from, to);
 
             if (result) {
                 // Create Blob and trigger download
@@ -38,6 +43,9 @@ export function ReportsView({ firmId }: { firmId: string }) {
 
     return (
         <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-end">
+                <DateRangePicker firmId={firmId} />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Customers Report */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">

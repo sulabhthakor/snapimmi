@@ -2,6 +2,7 @@
 
 import { checkExpiringDocuments } from "@/lib/cron";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function getExpiringItems(firmId: string) {
     const session = await auth();
@@ -10,22 +11,57 @@ export async function getExpiringItems(firmId: string) {
         return [];
     }
 
-    // Reuse shared logic
-    const results = await checkExpiringDocuments(firmId);
+    // Query for items expiring in the next 90 days
+    const today = new Date();
+    const future90 = new Date(today);
+    future90.setDate(today.getDate() + 90);
 
-    // Map to the view format if slightly different, or return as is.
-    // The current view expects slightly distinct fields or ID format?
-    // ExpiryResult has: firmId, customerName, type, expiryDate(Date), daysLeft, docId.
-    // The original getExpiringItems returned: { id, customerId, customerName, type, detail, expiryDate(string), daysLeft }
+    const [passports, visas] = await Promise.all([
+        prisma.passport.findMany({
+            where: {
+                customer: { firmId },
+                expiryDate: {
+                    gte: today,
+                    lte: future90
+                },
+                deletedAt: null
+            },
+            include: { customer: true }
+        }),
+        prisma.visa.findMany({
+            where: {
+                customer: { firmId },
+                expiryDate: {
+                    gte: today,
+                    lte: future90
+                },
+                status: 'Active',
+                deletedAt: null
+            },
+            include: { customer: true }
+        })
+    ]);
 
-    // We need to map it back to preserve UI contract.
-    return results.map(item => ({
-        id: item.docId,
-        customerId: item.customerId,
-        customerName: item.customerName,
-        type: item.type,
-        detail: `${item.type} expiring`,
-        expiryDate: item.expiryDate.toISOString().split('T')[0],
-        daysLeft: item.daysLeft
-    }));
+    const results = [
+        ...passports.map(p => ({
+            id: `passport-${p.id}`,
+            customerId: p.customerId,
+            customerName: p.customer.fullName,
+            type: 'Passport',
+            detail: `Passport expiring`,
+            expiryDate: p.expiryDate.toISOString().split('T')[0],
+            daysLeft: Math.ceil((new Date(p.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        })),
+        ...visas.map(v => ({
+            id: `visa-${v.id}`,
+            customerId: v.customerId,
+            customerName: v.customer.fullName,
+            type: 'Visa',
+            detail: `Visa (${v.country}) expiring`,
+            expiryDate: v.expiryDate.toISOString().split('T')[0],
+            daysLeft: Math.ceil((new Date(v.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        }))
+    ].sort((a, b) => a.daysLeft - b.daysLeft);
+
+    return results;
 }

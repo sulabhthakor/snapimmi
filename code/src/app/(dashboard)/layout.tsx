@@ -41,10 +41,10 @@ export default async function DashboardLayout({
     return (
         <div className="min-h-screen bg-gray-50">
             <Sidebar firmId={firmId} firmName={firm?.name} />
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300">
                 <SystemBanner />
                 <Header user={session?.user} />
-                <main className="flex-1 py-8 px-6">
+                <main className="flex-1 py-4 lg:py-8 px-4 lg:px-6">
                     <div className="mx-auto max-w-7xl">
                         <Breadcrumbs />
                         {children}

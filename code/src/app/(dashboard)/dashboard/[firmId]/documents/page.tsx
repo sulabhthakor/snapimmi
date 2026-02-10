@@ -2,8 +2,9 @@ import { Suspense } from 'react';
 import { DocumentVault } from '@/features/documents/components/DocumentVault';
 import { getDocuments } from '@/features/documents/server/actions';
 
-export default async function DocumentsPage({ params }: { params: { firmId: string } }) {
-    const documents = await getDocuments(params.firmId);
+export default async function DocumentsPage({ params }: { params: Promise<{ firmId: string }> }) {
+    const { firmId } = await params;
+    const documents = await getDocuments(firmId);
 
     return (
         <div className="space-y-6">

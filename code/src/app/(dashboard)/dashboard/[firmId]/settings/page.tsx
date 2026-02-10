@@ -6,7 +6,7 @@ import { TeamList } from "@/features/settings/components/TeamList";
 import { getTeamMembers } from "@/features/settings/server/actions";
 import { User, Lock, Shield, Users } from 'lucide-react';
 
-export default async function SettingsPage({ params }: { params: { firmId: string } }) {
+export default async function SettingsPage({ params }: { params: Promise<{ firmId: string }> }) {
     const session = await auth();
     const { firmId } = await params;
 

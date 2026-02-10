@@ -15,7 +15,7 @@ async function getCountry(id: string) {
     });
 }
 
-export default async function CountryDetailPage({ params }: { params: { countryId: string } }) {
+export default async function CountryDetailPage({ params }: { params: Promise<{ countryId: string }> }) {
     const { countryId } = await params;
     const country = await getCountry(countryId);
 

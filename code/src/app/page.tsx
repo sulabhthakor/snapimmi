@@ -1,3 +1,4 @@
+import { LandingHeader } from "@/components/layout/landing-header";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Shield, Zap, Globe, Users, LayoutDashboard, FileText } from "lucide-react";
 
@@ -11,41 +12,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white text-gray-900 selection:bg-gray-900 selection:text-white">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100/50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight">SnapImmi</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#features" className="hover:text-black transition-colors">Features</a>
-            <a href="#solutions" className="hover:text-black transition-colors">Solutions</a>
-            <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
-          </nav>
-          <div className="flex items-center gap-4">
-            {user ? (
-              <UserMenu user={user} />
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-md transition-colors"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/login"
-                  className="px-5 py-2 text-sm font-medium bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:shadow-lg hover:shadow-gray-200"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <LandingHeader user={user} />
 
       <main>
         {/* Hero Section */}

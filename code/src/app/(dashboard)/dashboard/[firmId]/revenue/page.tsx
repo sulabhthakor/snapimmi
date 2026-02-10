@@ -13,8 +13,8 @@ export default async function RevenuePage({
     params,
     searchParams
 }: {
-    params: { firmId: string };
-    searchParams: { status?: string; from?: string; to?: string };
+    params: Promise<{ firmId: string }>;
+    searchParams: Promise<{ status?: string; from?: string; to?: string }>;
 }) {
     const session = await auth();
     // @ts-ignore

@@ -192,21 +192,21 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">{firm?.name} Dashboard</h1>
                     <p className="text-gray-600 mt-1">Welcome back, here's what's happening today.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full md:w-auto">
                     <Link
                         href={`/dashboard/${firmId}/reports`}
-                        className="bg-white border text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm flex items-center justify-center"
+                        className="flex-1 md:flex-none bg-white border text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm flex items-center justify-center"
                     >
                         Download Report
                     </Link>
                     <Link
                         href={`/dashboard/${firmId}/applications/new`}
-                        className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 shadow-md flex items-center justify-center"
+                        className="flex-1 md:flex-none bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 shadow-md flex items-center justify-center"
                     >
                         + New Application
                     </Link>
@@ -297,39 +297,60 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
 
                     {/* Chart Placeholder (To be implemented) */}
                     <Link href={`/dashboard/${firmId}/applications`} className="block">
-                        <div className="bg-gray-900 rounded-xl p-6 text-white shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm ring-1 ring-gray-900/5 p-6 relative overflow-hidden group hover:shadow-md transition-all">
                             <div className="relative z-10">
-                                <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                                <h3 className="font-semibold text-lg text-gray-900 mb-1 flex items-center gap-2">
                                     Application Pipeline
-                                    <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <ArrowUpRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900 transition-colors" />
                                 </h3>
-                                <p className="text-gray-400 text-sm mb-6">Overview of current application stages.</p>
-                                <div className="h-48 flex items-end gap-4">
-                                    {/* Real Data Bars */}
-                                    <div className="w-full bg-gray-800 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.PENDING / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
-                                            Pending: {stats.pipeline.PENDING}
+                                <p className="text-gray-500 text-sm mb-6">Overview of current application stages.</p>
+
+                                <div className="h-48 flex items-end gap-4 mt-8">
+                                    {/* Pending */}
+                                    <div className="w-full h-full flex flex-col justify-end gap-2 group/bar cursor-default">
+                                        <div className="w-full bg-gray-100 rounded-t-md relative transition-all duration-500 hover:bg-gray-200" style={{ height: `${Math.max(15, (stats.pipeline.PENDING / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-lg pointer-events-none">
+                                                {stats.pipeline.PENDING} Applications
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
                                         </div>
+                                        <span className="text-xs text-center font-medium text-gray-500">Pending</span>
                                     </div>
-                                    <div className="w-full bg-gray-700 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.DOCUMENTS_COLLECTED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
-                                            Docs: {stats.pipeline.DOCUMENTS_COLLECTED}
+
+                                    {/* Doc Collection */}
+                                    <div className="w-full h-full flex flex-col justify-end gap-2 group/bar cursor-default">
+                                        <div className="w-full bg-blue-100 rounded-t-md relative transition-all duration-500 hover:bg-blue-200" style={{ height: `${Math.max(15, (stats.pipeline.DOCUMENTS_COLLECTED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-lg pointer-events-none">
+                                                {stats.pipeline.DOCUMENTS_COLLECTED} Collecting
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
                                         </div>
+                                        <span className="text-xs text-center font-medium text-gray-500">Collecting</span>
                                     </div>
-                                    <div className="w-full bg-blue-600 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.APPLIED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
-                                            Applied: {stats.pipeline.APPLIED}
+
+                                    {/* Applied */}
+                                    <div className="w-full h-full flex flex-col justify-end gap-2 group/bar cursor-default">
+                                        <div className="w-full bg-blue-500 rounded-t-md relative transition-all duration-500 hover:bg-blue-600" style={{ height: `${Math.max(15, (stats.pipeline.APPLIED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-lg pointer-events-none">
+                                                {stats.pipeline.APPLIED} Applied
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
                                         </div>
+                                        <span className="text-xs text-center font-medium text-gray-500">Applied</span>
                                     </div>
-                                    <div className="w-full bg-green-500 rounded-t-sm relative group/bar transition-all duration-500" style={{ height: `${Math.max(15, (stats.pipeline.APPROVED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
-                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-sm">
-                                            Approved: {stats.pipeline.APPROVED}
+
+                                    {/* Approved */}
+                                    <div className="w-full h-full flex flex-col justify-end gap-2 group/bar cursor-default">
+                                        <div className="w-full bg-green-500 rounded-t-md relative transition-all duration-500 hover:bg-green-600" style={{ height: `${Math.max(15, (stats.pipeline.APPROVED / (Math.max(1, stats.activeApplications) * 1.5)) * 100)}%` }}>
+                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-lg pointer-events-none">
+                                                {stats.pipeline.APPROVED} Approved
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
                                         </div>
+                                        <span className="text-xs text-center font-medium text-gray-500">Approved</span>
                                     </div>
                                 </div>
                             </div>
-                            {/* Background decoration */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
                         </div>
                     </Link>
                 </div>

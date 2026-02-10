@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, FolderClosed, Clock, Zap, IndianRupee } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, FolderClosed, Clock, Zap, IndianRupee, Menu } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 const navigation = {
     main: [
@@ -21,7 +24,13 @@ const navigation = {
     ]
 };
 
-export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: string }) {
+interface SidebarContentProps {
+    firmId: string;
+    firmName?: string;
+    onLinkClick?: () => void;
+}
+
+export function SidebarContent({ firmId, firmName, onLinkClick }: SidebarContentProps) {
     const pathname = usePathname();
 
     const handleSignOut = async () => {
@@ -51,6 +60,7 @@ export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: strin
             <Link
                 key={item.name}
                 href={href}
+                onClick={onLinkClick}
                 className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${isActive
                     ? 'bg-black text-white shadow-md'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -63,10 +73,10 @@ export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: strin
     };
 
     return (
-        <div className="hidden border-r border-gray-200 bg-gray-50/50 text-gray-900 lg:block lg:w-64 lg:fixed lg:inset-y-0 z-50 backdrop-blur-xl">
+        <div className="flex h-full flex-col bg-gray-50/50 text-gray-900">
             {/* Header / Logo */}
             <div className="flex h-16 items-center px-6 border-b border-gray-200 bg-white/50">
-                <Link href={`/dashboard/${firmId}`} className="flex items-center gap-2.5 font-bold text-xl group">
+                <Link href={`/dashboard/${firmId}`} className="flex items-center gap-2.5 font-bold text-xl group" onClick={onLinkClick}>
                     <div className="h-8 w-8 rounded-xl bg-black flex items-center justify-center shadow-lg shadow-gray-200 group-hover:scale-105 transition-transform">
                         <span className="text-white font-bold text-sm">S</span>
                     </div>
@@ -111,6 +121,36 @@ export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: strin
                     Sign Out
                 </button>
             </div>
+        </div>
+    );
+}
+
+export function MobileSidebar({ firmId, firmName }: { firmId: string, firmName?: string }) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open sidebar</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72">
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                    Main navigation menu for the application.
+                </SheetDescription>
+                <SidebarContent firmId={firmId} firmName={firmName} onLinkClick={() => setOpen(false)} />
+            </SheetContent>
+        </Sheet>
+    );
+}
+
+export function Sidebar({ firmId, firmName }: { firmId: string, firmName?: string }) {
+    return (
+        <div className="hidden border-r border-gray-200 bg-gray-50/50 text-gray-900 lg:block lg:w-64 lg:fixed lg:inset-y-0 z-50 backdrop-blur-xl">
+            <SidebarContent firmId={firmId} firmName={firmName} />
         </div>
     );
 }

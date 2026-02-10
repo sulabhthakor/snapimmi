@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { format, subDays, subMonths, subYears, startOfDay, endOfDay } from 'date-fns';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 interface DateRangePickerProps {
     firmId: string;
@@ -22,6 +22,7 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
     const [toDate, setToDate] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
 
     // Read current filters from URL
@@ -57,7 +58,7 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
             params.delete('to');
         }
 
-        router.push(`/dashboard/${firmId}/revenue?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
         setIsOpen(false);
     };
 
@@ -84,7 +85,7 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`bg-white border ${hasActiveFilter ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm transition-all hover:text-black`}
+                className={`w-full sm:w-auto justify-center bg-white border ${hasActiveFilter ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm transition-all hover:text-black`}
             >
                 <Calendar className="h-4 w-4" />
                 {hasActiveFilter ? 'Date: Custom Range' : 'Date Range'}
