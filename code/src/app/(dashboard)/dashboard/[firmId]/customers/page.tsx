@@ -8,7 +8,7 @@ export default async function CustomersPage() {
     const safeData = { data: initialData.data, total: initialData.total };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Customers</h1>

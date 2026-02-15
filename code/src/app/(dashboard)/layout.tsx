@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SystemBanner } from '@/components/layout/SystemBanner';
+import { BottomNavWrapper } from '@/components/layout/BottomNavWrapper';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -44,13 +45,14 @@ export default async function DashboardLayout({
             <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300">
                 <SystemBanner />
                 <Header user={session?.user} />
-                <main className="flex-1 py-4 lg:py-8 px-4 lg:px-6">
+                <main className="flex-1 py-4 lg:py-8 px-4 lg:px-6 pb-24 lg:pb-8">
                     <div className="mx-auto max-w-7xl">
                         <Breadcrumbs />
                         {children}
                     </div>
                 </main>
             </div>
+            <BottomNavWrapper firmId={firmId} firmName={firm?.name} />
         </div>
     );
 }

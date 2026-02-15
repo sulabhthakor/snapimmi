@@ -102,7 +102,7 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="w-48">
+                    <div className="w-full sm:w-48">
                         <CustomSelect
                             value={filterType}
                             onChange={(val) => setFilterType(val)}
@@ -116,8 +116,8 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            {/* Desktop Table */}
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hidden md:block">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-200 text-gray-600 font-medium">
@@ -195,6 +195,58 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
+                {filteredData.length > 0 ? (
+                    filteredData.map((item) => (
+                        <div
+                            key={item.id}
+                            onClick={() => router.push(`/dashboard/${firmId}/customers/${item.customerId}`)}
+                            className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className={`p-2 rounded-lg shrink-0 ${item.type === 'Passport' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                        {item.type === 'Passport' ? <FileText className="h-4 w-4" /> : <Plane className="h-4 w-4" />}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="font-semibold text-gray-900 truncate">{item.customerName}</div>
+                                        <div className="text-xs text-gray-500">{item.type} · {item.detail}</div>
+                                    </div>
+                                </div>
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border shrink-0 ${getStatusColor(item.daysLeft)}`}>
+                                    {item.daysLeft <= 30 && <AlertTriangle className="h-3 w-3" />}
+                                    {getStatusLabel(item.daysLeft)}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between ml-11">
+                                <div className="text-xs text-gray-500">
+                                    <span className="font-medium text-gray-700">{item.expiryDate}</span> · {item.daysLeft}d left
+                                </div>
+                                <button
+                                    onClick={(e) => handleQuickEdit(e, item)}
+                                    disabled={isFetching}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                                >
+                                    {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Edit2 className="h-3 w-3" />}
+                                    Fix
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="px-6 py-12 text-center text-gray-500">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center">
+                                <Search className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <p className="font-medium">No expiring documents found</p>
+                            <p className="text-xs">Try adjusting your filters</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Sheets */}

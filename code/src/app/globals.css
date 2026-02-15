@@ -211,3 +211,17 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile utility classes */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 1023px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}

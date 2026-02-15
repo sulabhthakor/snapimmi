@@ -37,12 +37,12 @@ export default async function RevenuePage({
 
     return (
         <div className="space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Revenue</h1>
                     <p className="mt-2 text-base text-gray-600">Overview of financial performance and transactions.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <DateRangePicker firmId={firmId} />
                     <ExportButton firmId={firmId} />
                 </div>
@@ -115,11 +115,13 @@ export default async function RevenuePage({
                 {/* Transactions Table (2/3) */}
                 <div className="lg:col-span-2">
                     <div className="rounded-xl border border-gray-200 bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between">
                             <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
                             <button className="text-sm font-medium text-gray-600 hover:text-black hover:underline">View All</button>
                         </div>
-                        <div className="overflow-x-auto">
+
+                        {/* Desktop Table */}
+                        <div className="overflow-x-auto hidden md:block">
                             {transactions.length === 0 ? (
                                 <div className="p-12 text-center text-gray-500">
                                     <div className="inline-flex items-center justify-center p-4 bg-gray-50 rounded-full mb-3">
@@ -148,6 +150,48 @@ export default async function RevenuePage({
                                         ))}
                                     </tbody>
                                 </table>
+                            )}
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden divide-y divide-gray-100">
+                            {transactions.length === 0 ? (
+                                <div className="p-12 text-center text-gray-500">
+                                    <div className="inline-flex items-center justify-center p-4 bg-gray-50 rounded-full mb-3">
+                                        <CreditCard className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                    <p className="text-sm">No transactions found.</p>
+                                </div>
+                            ) : (
+                                transactions.map((trx) => (
+                                    <div key={trx.id} className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0">
+                                                    {trx.customerAvatar}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="font-medium text-gray-900 truncate">{trx.customerName}</div>
+                                                    <div className="text-xs text-gray-500">{trx.service}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right shrink-0 ml-2">
+                                                <div className="font-semibold text-gray-900">
+                                                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(trx.amount)}
+                                                </div>
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium capitalize
+                                                    ${trx.status === 'COMPLETED' ? 'bg-green-50 text-green-700' : ''}
+                                                    ${trx.status === 'PENDING' ? 'bg-amber-50 text-amber-700' : ''}
+                                                    ${trx.status === 'FAILED' ? 'bg-red-50 text-red-700' : ''}
+                                                    ${trx.status === 'REFUNDED' ? 'bg-gray-100 text-gray-700' : ''}
+                                                `}>
+                                                    {trx.status.toLowerCase()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-[11px] text-gray-400 ml-12">{trx.date}</div>
+                                    </div>
+                                ))
                             )}
                         </div>
                     </div>

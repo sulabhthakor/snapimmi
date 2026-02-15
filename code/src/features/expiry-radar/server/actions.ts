@@ -47,7 +47,7 @@ export async function getExpiringItems(firmId: string) {
             id: `passport-${p.id}`,
             customerId: p.customerId,
             customerName: p.customer.fullName,
-            type: 'Passport',
+            type: 'Passport' as const,
             detail: `Passport expiring`,
             expiryDate: p.expiryDate.toISOString().split('T')[0],
             daysLeft: Math.ceil((new Date(p.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -56,7 +56,7 @@ export async function getExpiringItems(firmId: string) {
             id: `visa-${v.id}`,
             customerId: v.customerId,
             customerName: v.customer.fullName,
-            type: 'Visa',
+            type: 'Visa' as const,
             detail: `Visa (${v.country}) expiring`,
             expiryDate: v.expiryDate.toISOString().split('T')[0],
             daysLeft: Math.ceil((new Date(v.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))

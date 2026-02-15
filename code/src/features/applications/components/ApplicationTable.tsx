@@ -98,8 +98,8 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            {/* Table - Desktop */}
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hidden md:block">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-200 text-gray-700 font-semibold">
@@ -161,6 +161,46 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Cards - Mobile */}
+            <div className="md:hidden bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
+                {applications.map((app) => (
+                    <div
+                        key={app.id}
+                        onClick={() => setEditingApp(app)}
+                        className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 text-sm shrink-0">
+                                    {app.customerName.charAt(0)}
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="font-semibold text-gray-900 truncate">{app.customerName}</div>
+                                    <div className="text-xs text-gray-500">{app.visaType} · {app.country}</div>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-gray-400 shrink-0 ml-2" />
+                        </div>
+                        <div className="flex items-center gap-2 ml-12 flex-wrap">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_COLORS[app.status]}`}>
+                                {STATUS_LABELS[app.status]}
+                            </span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${PRIORITY_COLORS[app.priority]}`}>
+                                {app.priority}
+                            </span>
+                            <span className="text-[11px] text-gray-400 ml-auto">
+                                {new Date(app.lastUpdated).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+                {applications.length === 0 && (
+                    <div className="px-6 py-12 text-center text-gray-500">
+                        No applications found matching your filters.
+                    </div>
+                )}
             </div>
 
             {/* Edit Sheet */}
