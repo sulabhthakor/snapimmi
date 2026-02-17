@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./design-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -217,11 +218,74 @@ body {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-fast {
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Focus states */
+  .focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgb(0 0 0 / 0.05);
+    border-color: #000;
+  }
+
+  /* Interactive elements */
+  .interactive {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  .interactive:active {
+    transform: translateY(0);
+  }
+
+  /* Card styles */
+  .card {
+    background-color: white;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(229 231 235);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  .card-hover {
+    background-color: white;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(229 231 235);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border-color: rgb(209 213 219);
+  }
 }
 
 /* Prevent horizontal overflow on mobile */
 @media (max-width: 1023px) {
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Improve animations performance */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

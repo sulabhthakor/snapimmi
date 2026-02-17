@@ -428,35 +428,37 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
 }
 
 function KPICard({ title, value, icon: Icon, trend, trendUp, alert, gradient }: any) {
-    const gradientMap: Record<string, string> = {
-        indigo: 'from-indigo-500 to-indigo-600',
-        blue: 'from-blue-500 to-blue-600',
-        emerald: 'from-emerald-500 to-emerald-600',
-        red: 'from-red-500 to-red-600',
+    const colorMap: Record<string, { bg: string; text: string }> = {
+        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-500' },
+        blue: { bg: 'bg-blue-500', text: 'text-blue-500' },
+        emerald: { bg: 'bg-emerald-500', text: 'text-emerald-500' },
+        red: { bg: 'bg-red-500', text: 'text-red-500' },
     };
-    const bg = gradient ? gradientMap[gradient] || gradientMap.indigo : (alert ? 'from-red-500 to-red-600' : 'from-gray-800 to-gray-900');
+    const colors = gradient ? colorMap[gradient] || colorMap.indigo : (alert ? colorMap.red : { bg: 'bg-black', text: 'text-black' });
 
     return (
-        <div className={`group p-6 rounded-2xl border ${alert ? 'bg-red-50/30 border-red-100' : 'bg-white border-gray-200/80'} shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full`}>
+        <div className={`group p-4 sm:p-6 rounded-xl border ${alert ? 'bg-red-50/30 border-red-100' : 'bg-white border-gray-200/80'} shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full`}>
             <div>
-                <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2.5 rounded-xl bg-gradient-to-br ${bg} shadow-lg shadow-gray-200/50`}>
-                        <Icon className="h-5 w-5 text-white" />
+                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                    <div className={`p-2 sm:p-2.5 rounded-lg ${colors.bg} shadow-sm shrink-0`}>
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
                     {trend && (
-                        <div className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${alert ? 'bg-red-100 text-red-700' :
+                        <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap ${alert ? 'bg-red-100 text-red-700' :
                             trendUp ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
                             }`}>
-                            {trendUp && <ArrowUpRight className="h-3 w-3" />}
-                            {trend}
+                            {trendUp && <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
+                            <span className="hidden sm:inline">{trend}</span>
+                            <span className="sm:hidden">{trend.replace(' from last month', '').replace(' new this week', ' new').replace(' vs last year', ' vs LY')}</span>
                         </div>
                     )}
                 </div>
                 <div className="mt-1">
-                    <div className="text-3xl font-bold tracking-tight text-gray-900">{value}</div>
-                    <div className={`text-sm font-medium mt-1 ${alert ? 'text-red-600' : 'text-gray-500'}`}>{title}</div>
+                    <div className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 break-words">{value}</div>
+                    <div className={`text-xs sm:text-sm font-medium mt-1 ${alert ? 'text-red-600' : 'text-gray-500'}`}>{title}</div>
                 </div>
             </div>
         </div>
     )
 }
+

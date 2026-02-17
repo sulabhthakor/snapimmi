@@ -153,6 +153,118 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                 </div>
             </div>
 
+            {/* Passport, Visa, and Family Group Widgets - Mobile Only: Show above tabs */}
+            <div className="space-y-6 lg:hidden">
+                {/* Passport Widget */}
+                <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            Active Passport
+                        </h3>
+                        <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                    </div>
+                    {customer.passports?.[0] ? (
+                        <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="text-lg font-mono font-bold text-blue-900">{customer.passports[0].number}</div>
+                                <div className="text-xl">🇮🇳</div>
+                            </div>
+                            <div className="text-xs text-blue-700">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                            <p className="text-xs text-gray-400 mb-2">No passport added</p>
+                            <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Visa Widget */}
+                <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            Active Visa
+                        </h3>
+                        <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                    </div>
+                    {customer.visas?.[0] ? (
+                        <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="text-lg font-mono font-bold text-green-900">{customer.visas[0].number || 'No Number'}</div>
+                                <div className="text-xs font-bold px-2 py-1 bg-white rounded text-green-700 shadow-sm">{customer.visas[0].type}</div>
+                            </div>
+                            <div className="flex justify-between items-end">
+                                <div className="text-xs text-green-700">Expires: {new Date(customer.visas[0].expiryDate).toLocaleDateString()}</div>
+                                <div className="text-xs font-medium text-green-800">{customer.visas[0].country}</div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                            <p className="text-xs text-gray-400 mb-2">No visa added</p>
+                            <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Add Details</button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Family Group Widget */}
+                <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <Users className="h-4 w-4 text-gray-500" />
+                            Family Group
+                        </h3>
+                        {customer.familyGroup && (
+                            <Link
+                                href={`/dashboard/${firmId}/customers/new?existingFamilyId=${customer.familyGroupId}&newFamilyName=${encodeURIComponent(customer.familyGroup.name || '')}`}
+                                className="text-xs font-medium text-blue-600 hover:underline"
+                            >
+                                Add Member
+                            </Link>
+                        )}
+                    </div>
+
+                    {customer.familyGroup ? (
+                        <div className="space-y-3">
+                            <div className="text-sm font-medium text-gray-900 pb-2 border-b border-gray-100">
+                                {customer.familyGroup.name}
+                            </div>
+                            <div className="space-y-2">
+                                {customer.familyGroup.members?.map((member: any) => (
+                                    <Link
+                                        key={member.id}
+                                        href={`/dashboard/${firmId}/customers/${member.id}`}
+                                        className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
+                                                {member.fullName.slice(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className="text-sm text-gray-700 font-medium group-hover:text-black">
+                                                {member.fullName}
+                                            </div>
+                                        </div>
+                                        {member.isFamilyHead && (
+                                            <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">HEAD</span>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-4">
+                            <p className="text-xs text-gray-500 mb-3">Not part of any family group.</p>
+                            <button
+                                onClick={handleCreateFamilyGroup}
+                                disabled={isPending}
+                                className="text-sm font-medium border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 w-full"
+                            >
+                                Create Group
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Tabs Navigation */}
             <div className="border-b border-gray-200">
                 <div className="flex items-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
@@ -182,9 +294,10 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                 </div>
             </div>
 
+            {/* Grid Layout - Desktop: widgets left, content right | Mobile: stacked */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-8">
-                {/* Left Column (Sticky info? maybe) */}
-                <div className="space-y-6">
+                {/* Left Sidebar - Widgets (Desktop/Tablet Only) */}
+                <div className="space-y-6 hidden lg:block">
                     {/* Passport Widget */}
                     <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
@@ -295,8 +408,8 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     </div>
                 </div>
 
-                {/* Right Column (Tabs Content) */}
-                <div className="lg:col-span-2">
+                {/* Right Content - Tab Content (spans 2 columns on desktop) */}
+                <div className="lg:col-span-2 space-y-6">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             {/* Recent Activity / Applications Summary */}
@@ -556,6 +669,6 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
