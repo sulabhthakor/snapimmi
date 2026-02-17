@@ -87,27 +87,27 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
             />
 
             {/* Header Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="h-20 w-20 rounded-full bg-slate-900 flex items-center justify-center text-white text-2xl font-bold shadow-md ring-4 ring-gray-50">
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+                    <div className="flex items-center gap-4 sm:gap-5">
+                        <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg shadow-gray-200 shrink-0">
                             {customer.fullName.slice(0, 2).toUpperCase()}
                         </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">{customer.fullName}</h1>
-                            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
-                                <div className="flex items-center gap-1.5 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                        <div className="min-w-0">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{customer.fullName}</h1>
+                            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
+                                <div className="flex items-center gap-1.5 font-mono text-xs bg-gray-100 px-2 py-1 rounded-lg">
                                     ID: {customer.id.slice(-4).toUpperCase()}
                                 </div>
                                 {(customer.email) && (
-                                    <div className="flex items-center gap-1.5">
-                                        <Mail className="h-3.5 w-3.5" />
-                                        {customer.email}
+                                    <div className="flex items-center gap-1.5 truncate">
+                                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                                        <span className="truncate">{customer.email}</span>
                                     </div>
                                 )}
                                 {(customer.phone) && (
                                     <div className="flex items-center gap-1.5">
-                                        <Phone className="h-3.5 w-3.5" />
+                                        <Phone className="h-3.5 w-3.5 shrink-0" />
                                         {customer.phone}
                                     </div>
                                 )}
@@ -117,37 +117,37 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     <div className="flex gap-3 w-full md:w-auto">
                         <Link
                             href={`/dashboard/${firmId}/customers/${customer.id}/edit`}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
                         >
                             <Edit className="h-4 w-4" />
                             Edit
                         </Link>
                         <Link
                             href={`/dashboard/${firmId}/applications/new?customerId=${customer.id}`}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-black transition-all shadow-md"
                         >
                             <Plus className="h-4 w-4" />
-                            New Application
+                            New App
                         </Link>
                     </div>
                 </div>
 
                 {/* Quick Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-gray-100">
-                    <div className="flex flex-col">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Apps</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-5 border-t border-gray-100">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Active Apps</span>
                         <span className="text-xl font-bold text-gray-900">{customer._count?.applications || 0}</span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</span>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Documents</span>
                         <span className="text-xl font-bold text-gray-900">{customer._count?.documents || 0}</span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</span>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Paid</span>
                         <span className="text-xl font-bold text-gray-900">₹{totalPaid.toLocaleString()}</span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Tasks</span>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Tasks</span>
                         <span className="text-xl font-bold text-gray-900">{customer.tasks?.length || 0}</span>
                     </div>
                 </div>
@@ -155,24 +155,24 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
 
             {/* Tabs Navigation */}
             <div className="border-b border-gray-200">
-                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={cn(
-                                "pb-3.5 pt-2 text-sm font-medium border-b-2 transition-all whitespace-nowrap px-1 flex items-center gap-2",
+                                "pb-3 pt-2 text-sm font-medium border-b-2 transition-all whitespace-nowrap px-2 sm:px-3 flex items-center gap-1.5 snap-start",
                                 activeTab === tab.id
-                                    ? "border-slate-900 text-slate-900"
-                                    : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                                    ? "border-gray-900 text-gray-900"
+                                    : "border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-200"
                             )}
                         >
-                            <tab.icon className="h-4 w-4" />
+                            <tab.icon className="h-4 w-4 hidden sm:block" />
                             {tab.label}
                             {tab.count !== undefined && (
                                 <span className={cn(
-                                    "px-2 py-0.5 rounded-full text-xs font-bold",
-                                    activeTab === tab.id ? "bg-slate-100 text-slate-700" : "bg-gray-100 text-gray-600"
+                                    "px-1.5 py-0.5 rounded-full text-[10px] font-bold min-w-[20px] text-center",
+                                    activeTab === tab.id ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"
                                 )}>
                                     {tab.count}
                                 </span>
@@ -182,11 +182,11 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-8">
                 {/* Left Column (Sticky info? maybe) */}
                 <div className="space-y-6">
                     {/* Passport Widget */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                 Active Passport
@@ -210,7 +210,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     </div>
 
                     {/* Visa Widget */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                 Active Visa
@@ -237,7 +237,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     </div>
 
                     {/* Family Group Widget */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                 <Users className="h-4 w-4 text-gray-500" />
@@ -376,37 +376,60 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                                 <h3 className="font-semibold text-gray-900">Documents</h3>
                                 <button className="text-sm font-medium text-blue-600 hover:underline">Upload Document</button>
                             </div>
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                {customer.documents?.length > 0 ? (
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
-                                            <tr>
-                                                <th className="px-4 py-3">Name</th>
-                                                <th className="px-4 py-3">Category</th>
-                                                <th className="px-4 py-3 text-right">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {customer.documents.map((doc: any) => (
-                                                <tr key={doc.id} className="group hover:bg-gray-50">
-                                                    <td className="px-4 py-3 text-gray-900 font-medium">
-                                                        <div className="flex items-center gap-2">
-                                                            <FileIcon className="h-4 w-4 text-gray-400" />
-                                                            {doc.name}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-500">{doc.category}</td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <a href={doc.fileUrl} target="_blank" className="text-blue-600 hover:underline">View</a>
-                                                    </td>
+                            {customer.documents?.length > 0 ? (
+                                <>
+                                    {/* Mobile: Cards */}
+                                    <div className="space-y-3 md:hidden">
+                                        {customer.documents.map((doc: any) => (
+                                            <div key={doc.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-gray-50 rounded-lg">
+                                                        <FileIcon className="h-4 w-4 text-gray-400" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium text-sm text-gray-900 truncate">{doc.name}</div>
+                                                        <div className="text-xs text-gray-500 mt-0.5">{doc.category}</div>
+                                                    </div>
+                                                    <a href={doc.fileUrl} target="_blank" className="text-xs font-medium text-blue-600 px-3 py-1.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">View</a>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Desktop: Table */}
+                                    <div className="hidden md:block bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-gray-50/80 text-gray-500 font-medium border-b border-gray-200">
+                                                <tr>
+                                                    <th className="px-5 py-3">Name</th>
+                                                    <th className="px-5 py-3">Category</th>
+                                                    <th className="px-5 py-3 text-right">Action</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <div className="p-8 text-center text-gray-500">No documents found.</div>
-                                )}
-                            </div>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {customer.documents.map((doc: any) => (
+                                                    <tr key={doc.id} className="group hover:bg-gray-50/60">
+                                                        <td className="px-5 py-3.5 text-gray-900 font-medium">
+                                                            <div className="flex items-center gap-2">
+                                                                <FileIcon className="h-4 w-4 text-gray-400" />
+                                                                {doc.name}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-gray-500">{doc.category}</td>
+                                                        <td className="px-5 py-3.5 text-right">
+                                                            <a href={doc.fileUrl} target="_blank" className="text-blue-600 hover:underline">View</a>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl">
+                                    <FileIcon className="h-6 w-6 mx-auto mb-2 text-gray-300" />
+                                    No documents found.
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -451,53 +474,84 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     {activeTab === 'payments' && (
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900 mb-4">Payment History</h3>
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                {allPayments.length > 0 ? (
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
-                                            <tr>
-                                                <th className="px-4 py-3">Date</th>
-                                                <th className="px-4 py-3">Application</th>
-                                                <th className="px-4 py-3">Amount</th>
-                                                <th className="px-4 py-3 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {allPayments.map((p: any) => (
-                                                <tr key={p.id} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-3 text-gray-500">
-                                                        {format(new Date(p.paidAt || p.createdAt), 'MMM d, yyyy')}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900 font-medium">
-                                                        {p.applicationTitle}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900">
-                                                        ₹{Number(p.amount).toLocaleString()}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <span className={cn(
-                                                            "px-2 py-0.5 rounded-full text-xs font-bold",
-                                                            p.status === 'COMPLETED' ? "bg-green-100 text-green-700" :
-                                                                p.status === 'PENDING' ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
-                                                        )}>
-                                                            {p.status}
-                                                        </span>
-                                                    </td>
+                            {allPayments.length > 0 ? (
+                                <>
+                                    {/* Mobile: Cards */}
+                                    <div className="space-y-3 md:hidden">
+                                        {allPayments.map((p: any) => (
+                                            <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="min-w-0">
+                                                        <div className="font-medium text-sm text-gray-900 truncate">{p.applicationTitle}</div>
+                                                        <div className="text-xs text-gray-400 mt-0.5">{format(new Date(p.paidAt || p.createdAt), 'MMM d, yyyy')}</div>
+                                                    </div>
+                                                    <span className={cn(
+                                                        "px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0",
+                                                        p.status === 'COMPLETED' ? "bg-green-100 text-green-700" :
+                                                            p.status === 'PENDING' ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
+                                                    )}>
+                                                        {p.status}
+                                                    </span>
+                                                </div>
+                                                <div className="text-lg font-bold text-gray-900">₹{Number(p.amount).toLocaleString()}</div>
+                                            </div>
+                                        ))}
+                                        <div className="bg-gray-50 rounded-xl p-4 text-center">
+                                            <span className="text-xs text-gray-500">Total Paid </span>
+                                            <span className="text-lg font-bold text-gray-900">₹{totalPaid.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    {/* Desktop: Table */}
+                                    <div className="hidden md:block bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-gray-50/80 text-gray-500 font-medium border-b border-gray-200">
+                                                <tr>
+                                                    <th className="px-5 py-3">Date</th>
+                                                    <th className="px-5 py-3">Application</th>
+                                                    <th className="px-5 py-3">Amount</th>
+                                                    <th className="px-5 py-3 text-right">Status</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                        <tfoot className="bg-gray-50 border-t border-gray-200 font-bold text-gray-900">
-                                            <tr>
-                                                <td colSpan={2} className="px-4 py-3 text-right">Total Paid</td>
-                                                <td className="px-4 py-3">₹{totalPaid.toLocaleString()}</td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                ) : (
-                                    <div className="p-8 text-center text-gray-500">No payments recorded.</div>
-                                )}
-                            </div>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {allPayments.map((p: any) => (
+                                                    <tr key={p.id} className="hover:bg-gray-50/60">
+                                                        <td className="px-5 py-3.5 text-gray-500">
+                                                            {format(new Date(p.paidAt || p.createdAt), 'MMM d, yyyy')}
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-gray-900 font-medium">
+                                                            {p.applicationTitle}
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-gray-900">
+                                                            ₹{Number(p.amount).toLocaleString()}
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-right">
+                                                            <span className={cn(
+                                                                "px-2.5 py-1 rounded-full text-xs font-bold",
+                                                                p.status === 'COMPLETED' ? "bg-green-100 text-green-700" :
+                                                                    p.status === 'PENDING' ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
+                                                            )}>
+                                                                {p.status}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            <tfoot className="bg-gray-50/80 border-t border-gray-200 font-bold text-gray-900">
+                                                <tr>
+                                                    <td colSpan={2} className="px-5 py-3 text-right">Total Paid</td>
+                                                    <td className="px-5 py-3">₹{totalPaid.toLocaleString()}</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl">
+                                    <CreditCard className="h-6 w-6 mx-auto mb-2 text-gray-300" />
+                                    No payments recorded.
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
