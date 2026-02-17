@@ -110,7 +110,7 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
             title: `Task Completed: ${t.title}`,
             subtitle: `Assigned to ${t.assignee?.name}`,
             icon: FileText,
-            color: 'bg-blue-50 text-blue-600'
+            color: 'bg-primary-teal-50 text-primary-teal-600'
         })) || [])
     ].sort((a, b) => b.date.getTime() - a.date.getTime()) : [];
 
@@ -294,7 +294,7 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
                                             {details.customer.documents.map((doc: any) => (
                                                 <div key={doc.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all group">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                                        <div className="p-2 bg-primary-teal-50 text-primary-teal-600 rounded-lg">
                                                             <FileText className="h-5 w-5" />
                                                         </div>
                                                         <div>
@@ -383,7 +383,7 @@ export function EditApplicationSheet({ application, isOpen, onClose }: EditAppli
                             <button
                                 type="button"
                                 onClick={() => setIsPaymentOpen(true)}
-                                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 hover:bg-primary-teal-50 rounded-lg transition-colors"
                             >
                                 Record Payment
                             </button>

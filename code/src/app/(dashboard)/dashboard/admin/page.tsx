@@ -35,10 +35,10 @@ export default async function AdminDashboardPage() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Link href="/dashboard/admin/firms">
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <Card className="bg-white/80 backdrop-blur-xl border-gray-200/50 hover:shadow-[0_8px_20px_0_rgba(44,129,141,0.12)] transition-all cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Firms</CardTitle>
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                            <Building2 className="h-4 w-4 text-primary-teal-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.firmCount}</div>
@@ -50,10 +50,10 @@ export default async function AdminDashboardPage() {
                 </Link>
 
                 <Link href="/dashboard/admin/users">
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <Card className="bg-white/80 backdrop-blur-xl border-gray-200/50 hover:shadow-[0_8px_20px_0_rgba(44,129,141,0.12)] transition-all cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Users className="h-4 w-4 text-primary-teal-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.userCount}</div>
@@ -65,7 +65,7 @@ export default async function AdminDashboardPage() {
                 </Link>
 
                 <Link href="/dashboard/admin/settings">
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <Card className="bg-white/80 backdrop-blur-xl border-gray-200/50 hover:shadow-[0_8px_20px_0_rgba(44,129,141,0.12)] transition-all cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">System Status</CardTitle>
                             <TrendingUp className={`h-4 w-4 ${stats.settings?.maintenanceMode ? 'text-amber-500' : 'text-green-500'}`} />
@@ -86,7 +86,7 @@ export default async function AdminDashboardPage() {
                 </Link>
 
                 <Link href="/dashboard/admin/firms?status=PENDING_VERIFICATION">
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <Card className="bg-white/80 backdrop-blur-xl border-gray-200/50 hover:shadow-[0_8px_20px_0_rgba(44,129,141,0.12)] transition-all cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pending Actions</CardTitle>
                             <AlertCircle className={`h-4 w-4 ${stats.pendingFirms > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
@@ -103,7 +103,7 @@ export default async function AdminDashboardPage() {
 
             {/* Future: Recent Activity Log or Audit Table */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-1 lg:col-span-4">
+                <Card className="col-span-1 lg:col-span-4 bg-white/80 backdrop-blur-xl border-gray-200/50">
                     <CardHeader>
                         <CardTitle>Recent Activity</CardTitle>
                     </CardHeader>
@@ -113,7 +113,7 @@ export default async function AdminDashboardPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="col-span-1 lg:col-span-3">
+                <Card className="col-span-1 lg:col-span-3 bg-white/80 backdrop-blur-xl border-gray-200/50">
                     <CardHeader>
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
@@ -121,14 +121,14 @@ export default async function AdminDashboardPage() {
                         <div className="grid grid-cols-1 gap-2">
                             <Link
                                 href="/dashboard/admin/firms/new"
-                                className="p-3 bg-gray-50 rounded-lg text-sm text-gray-600 hover:bg-black hover:text-white cursor-pointer transition-all flex items-center justify-between group"
+                                className="p-3 bg-primary-teal-50 rounded-xl text-sm text-primary-teal-700 font-medium hover:bg-gradient-to-r hover:from-primary-teal-500 hover:to-primary-teal-600 hover:text-white cursor-pointer transition-all flex items-center justify-between group shadow-sm hover:shadow-[0_4px_12px_0_rgba(44,129,141,0.3)]"
                             >
                                 <span>Add New Firm</span>
                                 <Building2 className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                             </Link>
                             <Link
                                 href="/dashboard/admin/settings"
-                                className="p-3 bg-gray-50 rounded-lg text-sm text-gray-600 hover:bg-black hover:text-white cursor-pointer transition-all flex items-center justify-between group"
+                                className="p-3 bg-primary-teal-50 rounded-xl text-sm text-primary-teal-700 font-medium hover:bg-gradient-to-r hover:from-primary-teal-500 hover:to-primary-teal-600 hover:text-white cursor-pointer transition-all flex items-center justify-between group shadow-sm hover:shadow-[0_4px_12px_0_rgba(44,129,141,0.3)]"
                             >
                                 <span>System Settings</span>
                                 <TrendingUp className="h-4 w-4 opacity-50 group-hover:opacity-100" />

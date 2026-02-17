@@ -8,7 +8,9 @@ import { MobileSidebar } from './sidebar';
 
 export function Header({ user }: { user?: any }) {
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white/80 backdrop-blur-md px-4 lg:px-6 shadow-sm transition-all">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-x-4 border-b border-gray-200/50 bg-white/70 backdrop-blur-xl px-4 lg:px-6 shadow-[0_1px_3px_0_rgba(44,129,141,0.1)] transition-all">
+
+
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
                 <div className="flex items-center gap-x-2 lg:flex-1 lg:gap-x-4">
                     <MobileSidebar firmId={user?.firmId} />

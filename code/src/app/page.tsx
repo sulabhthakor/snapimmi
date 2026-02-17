@@ -19,8 +19,8 @@ export default async function Home() {
         <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
           {/* Background Gradients */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl opacity-50 pointer-events-none">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-gray-50 to-emerald-50 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-primary-teal-100 to-primary-teal-200 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-primary-teal-50 to-primary-teal-100 rounded-full blur-3xl" />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -35,7 +35,7 @@ export default async function Home() {
 
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
                 The Operating System for <br className="hidden md:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-teal-600 via-primary-teal-500 to-primary-teal-600">
                   Global Mobility
                 </span>
               </h1>
@@ -47,13 +47,13 @@ export default async function Home() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <Link
                   href="/login"
-                  className="h-12 px-8 rounded-full bg-black text-white font-medium flex items-center gap-2 hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200"
+                  className="h-12 px-8 rounded-full bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white font-semibold flex items-center gap-2 hover:from-primary-teal-600 hover:to-primary-teal-700 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary-teal-500/30 hover:shadow-2xl hover:shadow-primary-teal-500/40"
                 >
                   Start Free Trial <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="#demo"
-                  className="h-12 px-8 rounded-full border border-gray-200 bg-white text-gray-700 font-medium flex items-center gap-2 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                  className="h-12 px-8 rounded-full border border-primary-teal-200 bg-white text-primary-teal-700 font-medium flex items-center gap-2 hover:bg-primary-teal-50 hover:border-primary-teal-300 transition-all"
                 >
                   Book a Demo
                 </Link>
@@ -89,10 +89,10 @@ export default async function Home() {
 
             <div className="grid md:grid-cols-3 gap-6">
               {/* Feature 1 - Large */}
-              <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-blue-100 transition-colors" />
+              <div className="md:col-span-2 bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-[0_8px_30px_rgb(44,129,141,0.12)] transition-all relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-teal-50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-primary-teal-100 transition-colors" />
                 <div className="relative z-10">
-                  <div className="h-12 w-12 bg-black rounded-2xl flex items-center justify-center mb-6">
+                  <div className="h-12 w-12 bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-teal-500/30">
                     <LayoutDashboard className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-xl font-bold mb-3">Centralized Command Center</h3>
@@ -101,8 +101,8 @@ export default async function Home() {
               </div>
 
               {/* Feature 2 */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="h-12 w-12 bg-gray-100 rounded-2xl flex items-center justify-center mb-6 text-gray-900">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-[0_8px_30px_rgb(44,129,141,0.12)] transition-all">
+                <div className="h-12 w-12 bg-primary-teal-50 rounded-2xl flex items-center justify-center mb-6 text-primary-teal-600">
                   <Shield className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Bank-Grade Vault</h3>
@@ -119,7 +119,7 @@ export default async function Home() {
               </div>
 
               {/* Feature 4 - Large */}
-              <div className="md:col-span-2 bg-black rounded-3xl p-8 border border-gray-900 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="md:col-span-2 bg-gradient-to-br from-primary-teal-600 to-primary-teal-700 rounded-3xl p-8 border border-primary-teal-500/20 shadow-lg shadow-primary-teal-500/20 hover:shadow-xl hover:shadow-primary-teal-500/30 transition-all relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-64 h-64 bg-gray-800 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl opacity-50" />
                 <div className="relative z-10">
                   <div className="h-12 w-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
@@ -136,16 +136,16 @@ export default async function Home() {
         {/* CTA Section */}
         <section className="py-24">
           <div className="container mx-auto px-4">
-            <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-24 text-center relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-teal-600 via-primary-teal-500 to-primary-teal-700 rounded-[2.5rem] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl shadow-primary-teal-900/20">
               <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-800 to-gray-900 opacity-50" />
 
               <div className="relative z-10 max-w-3xl mx-auto space-y-8">
                 <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">Ready to modernize your agency?</h2>
-                <p className="text-xl text-gray-400">Join top immigration consultants who trust SnapImmi to power their growth.</p>
+                <p className="text-xl text-primary-teal-100">Join top immigration consultants who trust SnapImmi to power their growth.</p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link
                     href="/login"
-                    className="h-14 px-8 rounded-full bg-white text-black font-semibold flex items-center gap-2 hover:bg-gray-100 transition-all"
+                    className="h-14 px-8 rounded-full bg-white text-primary-teal-700 font-bold flex items-center gap-2 hover:bg-primary-teal-50 hover:shadow-xl transition-all hover:scale-105"
                   >
                     Get Started Now
                   </Link>

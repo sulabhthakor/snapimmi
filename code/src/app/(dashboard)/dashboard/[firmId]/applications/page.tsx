@@ -26,7 +26,7 @@ export default async function ApplicationsPage({
                 </div>
                 <Link
                     href={`/dashboard/${firmId}/applications/new`}
-                    className="w-full sm:w-auto text-center bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all"
+                    className="w-full sm:w-auto text-center bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:from-primary-teal-600 hover:to-primary-teal-700 shadow-[0_4px_12px_0_rgba(44,129,141,0.3)] hover:shadow-[0_6px_16px_0_rgba(44,129,141,0.4)] transform hover:-translate-y-0.5 transition-all"
                 >
                     + New Application
                 </Link>

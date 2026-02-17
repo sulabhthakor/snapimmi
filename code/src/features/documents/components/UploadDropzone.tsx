@@ -239,7 +239,7 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${isDragging
-                            ? 'border-blue-500 bg-blue-50/50 scale-[1.02]'
+                            ? 'border-primary-teal-500 bg-primary-teal-50/50 scale-[1.02]'
                             : 'border-gray-200 hover:border-black hover:bg-gray-50'
                             }`}
                     >

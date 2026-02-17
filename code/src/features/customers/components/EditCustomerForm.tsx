@@ -249,7 +249,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
             {/* Content: Documents */}
             {activeTab === 'DOCUMENTS' && (
                 <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg text-blue-800 text-sm">
+                    <div className="bg-primary-teal-50 border border-primary-teal-100 p-4 rounded-lg text-primary-teal-800 text-sm">
                         Manage documents for <strong>{customer.fullName}</strong>. Uploaded files are automatically linked to this profile.
                     </div>
                     <DocumentVault documents={customer.documents} />

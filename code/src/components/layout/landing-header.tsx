@@ -57,7 +57,7 @@ export function LandingHeader({ user }: { user?: any }) {
                                         </Link>
                                         <Link
                                             href="/login"
-                                            className="inline-flex justify-center items-center px-5 py-3 text-base font-medium bg-black text-white rounded-full hover:bg-gray-800 transition-all shadow-lg"
+                                            className="inline-flex justify-center items-center px-5 py-3 text-base font-semibold bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white rounded-full hover:from-primary-teal-600 hover:to-primary-teal-700 transition-all shadow-lg shadow-primary-teal-500/30"
                                             onClick={() => setIsOpen(false)}
                                         >
                                             Get Started
@@ -80,16 +80,16 @@ export function LandingHeader({ user }: { user?: any }) {
 
                 {/* Logo (Center on Mobile, Left on Desktop) */}
                 <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 md:static md:transform-none">
-                    <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 flex items-center justify-center shadow-md shadow-primary-teal-500/30">
                         <span className="text-white font-bold text-lg">S</span>
                     </div>
-                    <span className="text-xl font-bold tracking-tight">SnapImmi</span>
+                    <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-teal-600 to-primary-teal-500">SnapImmi</span>
                 </div>
 
                 {/* Desktop Navigation (Center-ish) */}
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 absolute left-1/2 -translate-x-1/2">
                     {navLinks.map((link) => (
-                        <a key={link.name} href={link.href} className="hover:text-black transition-colors">
+                        <a key={link.name} href={link.href} className="hover:text-primary-teal-600 transition-colors">
                             {link.name}
                         </a>
                     ))}
@@ -109,7 +109,7 @@ export function LandingHeader({ user }: { user?: any }) {
                             </Link>
                             <Link
                                 href="/login"
-                                className="px-5 py-2 text-sm font-medium bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:shadow-lg hover:shadow-gray-200"
+                                className="px-5 py-2 text-sm font-semibold bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white rounded-full hover:from-primary-teal-600 hover:to-primary-teal-700 transition-all shadow-md shadow-primary-teal-500/30 hover:shadow-lg hover:shadow-primary-teal-500/40"
                             >
                                 <span className="hidden md:inline">Get Started</span>
                                 <span className="md:hidden">Login</span>

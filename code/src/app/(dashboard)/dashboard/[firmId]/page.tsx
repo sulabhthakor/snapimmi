@@ -174,7 +174,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                         <p className="text-gray-600 mt-1">Platform overview.</p>
                     </div>
                 </div>
-                <div className="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="p-6 bg-white/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-[0_8px_24px_0_rgba(44,129,141,0.1)]">
                     <p>Welcome, Administrator. Global stats coming soon.</p>
                 </div>
             </div>
@@ -203,14 +203,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                 <div className="flex gap-3 w-full md:w-auto">
                     <Link
                         href={`/dashboard/${firmId}/reports`}
-                        className="flex-1 md:flex-none bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 shadow-sm flex items-center justify-center gap-2 transition-all"
+                        className="flex-1 md:flex-none bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-white hover:border-primary-teal-200 hover:text-primary-teal-700 shadow-sm flex items-center justify-center gap-2 transition-all"
                     >
                         <FileText className="h-4 w-4" />
                         <span className="hidden sm:inline">Download</span> Report
                     </Link>
                     <Link
                         href={`/dashboard/${firmId}/applications/new`}
-                        className="flex-1 md:flex-none bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-black shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="flex-1 md:flex-none bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:from-primary-teal-600 hover:to-primary-teal-700 shadow-[0_4px_12px_0_rgba(44,129,141,0.3)] hover:shadow-[0_6px_16px_0_rgba(44,129,141,0.4)] hover:-translate-y-0.5 flex items-center justify-center gap-2 transition-all"
                     >
                         + New Application
                     </Link>
@@ -249,7 +249,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                         icon={TrendingUp}
                         trend="+8% vs last year"
                         trendUp={true}
-                        gradient="emerald"
+                        gradient="teal"
                     />
                 </Link>
                 <Link href={`/dashboard/${firmId}/expiry-radar`}>
@@ -260,7 +260,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                         trend="Requires attention"
                         trendUp={false}
                         alert={true}
-                        gradient="red"
+                        gradient="orange"
                     />
                 </Link>
             </div>
@@ -271,11 +271,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                 {/* Left Column: Expiry Radar & Pipeline (2/3 width) */}
                 <div className="lg:col-span-2 space-y-6 lg:space-y-8">
                     {/* Expiry Radar */}
-                    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-[0_4px_16px_0_rgba(44,129,141,0.08)] overflow-hidden">
                         <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2.5">
-                                <div className="p-1.5 bg-amber-50 rounded-lg">
-                                    <Clock className="h-4 w-4 text-amber-600" />
+                                <div className="p-1.5 bg-primary-teal-50 rounded-lg">
+                                    <Clock className="h-4 w-4 text-primary-teal-600" />
                                 </div>
                                 Expiry Radar
                             </h3>
@@ -320,7 +320,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
 
                     {/* Application Pipeline */}
                     <Link href={`/dashboard/${firmId}/applications`} className="block">
-                        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 sm:p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-[0_4px_16px_0_rgba(44,129,141,0.08)] p-5 sm:p-6 relative overflow-hidden group hover:shadow-[0_8px_24px_0_rgba(44,129,141,0.12)] transition-all">
                             <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
@@ -381,11 +381,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
                     </div>
 
                     {/* Activity Feed */}
-                    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-[0_4px_16px_0_rgba(44,129,141,0.08)]">
                         <div className="p-5 sm:p-6 border-b border-gray-100">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2.5">
-                                <div className="p-1.5 bg-gray-100 rounded-lg">
-                                    <Activity className="h-4 w-4 text-gray-600" />
+                                <div className="p-1.5 bg-primary-teal-50 rounded-lg">
+                                    <Activity className="h-4 w-4 text-primary-teal-600" />
                                 </div>
                                 Recent Activity
                             </h3>
@@ -429,22 +429,24 @@ export default async function DashboardPage({ params }: { params: Promise<{ firm
 
 function KPICard({ title, value, icon: Icon, trend, trendUp, alert, gradient }: any) {
     const colorMap: Record<string, { bg: string; text: string }> = {
-        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-500' },
-        blue: { bg: 'bg-blue-500', text: 'text-blue-500' },
-        emerald: { bg: 'bg-emerald-500', text: 'text-emerald-500' },
-        red: { bg: 'bg-red-500', text: 'text-red-500' },
+        indigo: { bg: 'bg-primary-teal-500', text: 'text-primary-teal-500' },
+        blue: { bg: 'bg-primary-teal-600', text: 'text-primary-teal-600' },
+        teal: { bg: 'bg-primary-teal-500', text: 'text-primary-teal-500' },
+        emerald: { bg: 'bg-primary-teal-500', text: 'text-primary-teal-500' },
+        orange: { bg: 'bg-orange-500', text: 'text-orange-500' },
+        red: { bg: 'bg-orange-500', text: 'text-orange-500' },
     };
-    const colors = gradient ? colorMap[gradient] || colorMap.indigo : (alert ? colorMap.red : { bg: 'bg-black', text: 'text-black' });
+    const colors = gradient ? colorMap[gradient] || colorMap.indigo : (alert ? colorMap.red : { bg: 'bg-primary-teal-500', text: 'text-primary-teal-500' });
 
     return (
-        <div className={`group p-4 sm:p-6 rounded-xl border ${alert ? 'bg-red-50/30 border-red-100' : 'bg-white border-gray-200/80'} shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full`}>
+        <div className={`group p-4 sm:p-6 rounded-2xl border ${alert ? 'bg-orange-50/30 border-orange-100' : 'bg-white/80 backdrop-blur-xl border-gray-200/50'} shadow-[0_4px_12px_0_rgba(44,129,141,0.08)] hover:shadow-[0_8px_20px_0_rgba(44,129,141,0.12)] hover:-translate-y-1 transition-all duration-200 h-full`}>
             <div>
                 <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
                     <div className={`p-2 sm:p-2.5 rounded-lg ${colors.bg} shadow-sm shrink-0`}>
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
                     {trend && (
-                        <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap ${alert ? 'bg-red-100 text-red-700' :
+                        <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap ${alert ? 'bg-orange-100 text-orange-700' :
                             trendUp ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
                             }`}>
                             {trendUp && <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
@@ -455,7 +457,7 @@ function KPICard({ title, value, icon: Icon, trend, trendUp, alert, gradient }: 
                 </div>
                 <div className="mt-1">
                     <div className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 break-words">{value}</div>
-                    <div className={`text-xs sm:text-sm font-medium mt-1 ${alert ? 'text-red-600' : 'text-gray-500'}`}>{title}</div>
+                    <div className={`text-xs sm:text-sm font-medium mt-1 ${alert ? 'text-orange-600' : 'text-gray-500'}`}>{title}</div>
                 </div>
             </div>
         </div>

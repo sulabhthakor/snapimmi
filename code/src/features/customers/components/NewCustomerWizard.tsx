@@ -225,7 +225,7 @@ export function NewCustomerWizard() {
                 </div>
                 {effectiveFamilyId && (
                     <div className="mt-4 text-center">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-teal-50 text-primary-teal-700 text-sm font-medium">
                             <Users className="h-3 w-3" /> Adding members to family group
                         </span>
                     </div>
@@ -505,7 +505,7 @@ export function NewCustomerWizard() {
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4" /> Save & Add Spouse/Child</>}
                                     </button>
 
-                                    <button type="submit" disabled={isPending} className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-500 font-medium inline-flex items-center gap-2 transition-all shadow-lg shadow-green-100 transform hover:-translate-y-0.5">
+                                    <button type="submit" disabled={isPending} className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-8 py-3 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-semibold inline-flex items-center gap-2 transition-all shadow-lg shadow-primary-teal-500/30 transform hover:-translate-y-0.5">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4" /> Finish</>}
                                     </button>
                                 </div>

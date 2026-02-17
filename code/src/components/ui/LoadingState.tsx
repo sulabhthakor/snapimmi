@@ -15,7 +15,7 @@ export function LoadingState({
     if (variant === 'page') {
         return (
             <div className={cn('flex flex-col items-center justify-center min-h-[400px] space-y-4', className)}>
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary-teal-500" />
                 <p className="text-sm text-gray-500 font-medium">{message}</p>
             </div>
         );
@@ -24,7 +24,7 @@ export function LoadingState({
     if (variant === 'inline') {
         return (
             <div className={cn('flex items-center gap-2', className)}>
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary-teal-500" />
                 <span className="text-sm text-gray-500">{message}</span>
             </div>
         );
@@ -33,7 +33,7 @@ export function LoadingState({
     if (variant === 'table') {
         return (
             <div className="p-12 text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-3" />
+                <Loader2 className=" h-8 w-8 animate-spin text-primary-teal-500 mx-auto mb-3" />
                 <p className="text-sm text-gray-500 font-medium">{message}</p>
             </div>
         );
@@ -41,9 +41,9 @@ export function LoadingState({
 
     // Default: card variant
     return (
-        <div className={cn('bg-white rounded-xl border border-gray-200 shadow-sm p-8 sm:p-12', className)}>
+        <div className={cn('bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-[0_4px_16px_0_rgba(44,129,141,0.08)] p-8 sm:p-12', className)}>
             <div className="flex flex-col items-center justify-center space-y-3">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary-teal-500" />
                 <p className="text-sm text-gray-500 font-medium">{message}</p>
             </div>
         </div>

@@ -174,7 +174,7 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                         <span className="text-[10px] font-bold uppercase tracking-wider bg-white/80 px-2 py-0.5 rounded-full shadow-sm">PDF</span>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center w-full h-full text-blue-500 bg-blue-50/50">
+                                    <div className="flex flex-col items-center justify-center w-full h-full text-primary-teal-500 bg-primary-teal-50/50">
                                         <File className="h-10 w-10 mb-2 drop-shadow-sm" strokeWidth={1.5} />
                                         <span className="text-[10px] font-bold uppercase tracking-wider bg-white/80 px-2 py-0.5 rounded-full shadow-sm">FILE</span>
                                     </div>
@@ -186,7 +186,7 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                     <p className="text-xs text-gray-500 mt-1">{formatSize(doc.fileSize)}</p>
 
                                     {doc.applicationName && (
-                                        <div className="mt-1 flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit max-w-full truncate">
+                                        <div className="mt-1 flex items-center gap-1 text-[10px] text-primary-teal-600 bg-primary-teal-50 px-1.5 py-0.5 rounded w-fit max-w-full truncate">
                                             <FileText className="h-3 w-3 flex-shrink-0" />
                                             <span className="truncate">{doc.applicationName}</span>
                                         </div>
@@ -259,7 +259,7 @@ export function DocumentVault({ documents }: { documents: Document[] }) {
                                         <div className="flex flex-col">
                                             <span>{doc.customerName || 'N/A'}</span>
                                             {doc.applicationName && (
-                                                <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-1">
+                                                <span className="text-xs text-primary-teal-600 bg-primary-teal-50 px-1.5 py-0.5 rounded w-fit mt-1">
                                                     {doc.applicationName}
                                                 </span>
                                             )}

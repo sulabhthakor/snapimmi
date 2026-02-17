@@ -47,7 +47,7 @@ export function UserMenu({ user }: { user: any }) {
                         alt=""
                     />
                 ) : (
-                    <div className="h-8 w-8 rounded-full bg-black flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white">
                         {initials}
                     </div>
                 )}
@@ -72,7 +72,7 @@ export function UserMenu({ user }: { user: any }) {
                             href={`/dashboard/${user.firmId}/settings`}
                             className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors group"
                         >
-                            <div className="p-1.5 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-black group-hover:shadow-sm transition-all">
+                            <div className="p-1.5 rounded-lg bg-primary-teal-50 text-primary-teal-600 group-hover:bg-primary-teal-100 group-hover:text-primary-teal-700 group-hover:shadow-sm transition-all">
                                 <User className="h-4 w-4" />
                             </div>
                             My Profile

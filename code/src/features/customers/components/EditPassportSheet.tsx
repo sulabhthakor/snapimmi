@@ -119,7 +119,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                         {/* Primary Info Section */}
                         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3 bg-blue-600 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Identity
                             </h3>
 
@@ -166,7 +166,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                         {/* Dates Section */}
                         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Validity
                             </h3>
 
@@ -207,7 +207,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 {/* Front Upload */}
                                 <div className={cn(
                                     "relative border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group overflow-hidden bg-white hover:bg-gray-50",
-                                    files.front ? "border-blue-200 bg-blue-50/30" : "border-gray-300"
+                                    files.front ? "border-primary-teal-200 bg-primary-teal-50/30" : "border-gray-300"
                                 )}>
                                     {files.front ? (
                                         <>
@@ -237,7 +237,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 {/* Back Upload */}
                                 <div className={cn(
                                     "relative border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group overflow-hidden bg-white hover:bg-gray-50",
-                                    files.back ? "border-blue-200 bg-blue-50/30" : "border-gray-300"
+                                    files.back ? "border-primary-teal-200 bg-primary-teal-50/30" : "border-gray-300"
                                 )}>
                                     {files.back ? (
                                         <>

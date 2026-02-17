@@ -4,59 +4,93 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Zinc 950 */
+  /* ==================== TEAL PRIMARY COLORS ==================== */
+  --color-primary-teal: #2c818d;
+  --color-primary-teal-50: #e8f5f7;
+  --color-primary-teal-100: #c5e7ec;
+  --color-primary-teal-200: #9dd6de;
+  --color-primary-teal-300: #6fc4d0;
+  --color-primary-teal-400: #4daab8;
+  --color-primary-teal-500: #2c818d;
+  --color-primary-teal-600: #226570;
+  --color-primary-teal-700: #1a4d56;
+  --color-primary-teal-800: #12363d;
+  --color-primary-teal-900: #0a1f23;
 
-  --primary: oklch(0.205 0 0);
-  /* Slate 900 */
+  /* ==================== GLASSMORPHISM ==================== */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
+  --glass-bg-weak: rgba(255, 255, 255, 0.5);
+  --glass-bg-dark: rgba(44, 129, 141, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-strong: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(44, 129, 141, 0.15);
+  --glass-shadow-lg: 0 12px 48px 0 rgba(44, 129, 141, 0.2);
+  --backdrop-blur: 12px;
+  --backdrop-blur-strong: 20px;
+
+  /* ==================== GRADIENTS ==================== */
+  --gradient-primary: linear-gradient(135deg, #2c818d 0%, #3a9ca9 100%);
+  --gradient-primary-soft: linear-gradient(135deg, #4daab8 0%, #6fc4d0 100%);
+  --gradient-soft: linear-gradient(135deg, #e8f5f7 0%, #ffffff 100%);
+  --gradient-bg: linear-gradient(135deg, #f9fafb 0%, #e8f5f7 50%, #ffffff 100%);
+  --gradient-teal-glow: radial-gradient(circle at 50% 50%, rgba(44, 129, 141, 0.15) 0%, transparent 70%);
+
+  /* ==================== SHADCN UI COLORS ==================== */
+  /* Updated with Teal Theme */
+  --primary: oklch(0.48 0.08 196);
+  /* Teal base */
   --primary-foreground: oklch(0.985 0 0);
-  /* Slate 50 */
+  /* White */
 
   --secondary: oklch(0.97 0 0);
-  /* Slate 100 */
+  /* Light gray */
   --secondary-foreground: oklch(0.205 0 0);
-  /* Slate 900 */
 
   --muted: oklch(0.97 0 0);
-  /* Slate 100 */
   --muted-foreground: oklch(0.556 0 0);
-  /* Slate 500 */
 
-  --accent: oklch(0.97 0 0);
-  /* Slate 100 */
+  --accent: oklch(0.93 0.03 196);
+  /* Light teal */
   --accent-foreground: oklch(0.205 0 0);
-  /* Slate 900 */
 
   --destructive: oklch(0.577 0.245 27.325);
-  /* Red 500 */
   --destructive-foreground: #f8fafc;
-  /* Slate 50 */
 
   --border: oklch(0.922 0 0);
-  /* Slate 200 */
   --input: oklch(0.922 0 0);
-  /* Slate 200 */
-  --ring: oklch(0.708 0 0);
-  /* Slate 900 */
-  --radius: 0.625rem;
+  --ring: oklch(0.48 0.08 196);
+  /* Teal for focus rings */
+  --radius: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
+
+  /* Charts with teal color scheme */
+  --chart-1: oklch(0.48 0.08 196);
+  /* Teal */
+  --chart-2: oklch(0.6 0.15 185);
+  /* Cyan */
+  --chart-3: oklch(0.646 0.222 41.116);
+  /* Orange */
   --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Yellow */
+  --chart-5: oklch(0.398 0.07 227.392);
+  /* Blue */
+
+  /* Sidebar with teal theme */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.48 0.08 196);
+  /* Teal */
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.48 0.08 196);
 }
 
 @theme inline {
@@ -94,6 +128,19 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Teal color scale for utility classes */
+  --color-primary-teal-50: var(--color-primary-teal-50);
+  --color-primary-teal-100: var(--color-primary-teal-100);
+  --color-primary-teal-200: var(--color-primary-teal-200);
+  --color-primary-teal-300: var(--color-primary-teal-300);
+  --color-primary-teal-400: var(--color-primary-teal-400);
+  --color-primary-teal-500: var(--color-primary-teal-500);
+  --color-primary-teal-600: var(--color-primary-teal-600);
+  --color-primary-teal-700: var(--color-primary-teal-700);
+  --color-primary-teal-800: var(--color-primary-teal-800);
+  --color-primary-teal-900: var(--color-primary-teal-900);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -115,23 +162,95 @@
   input[type='search'],
   textarea,
   select {
-    @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-4 focus:ring-black/5 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm;
+    @apply w-full rounded-xl border border-gray-200 bg-white/90 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-gray-700 placeholder:text-gray-400 focus:border-primary-teal-500 focus:outline-none focus:ring-4 focus:ring-primary-teal-500/10 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm;
   }
 
   input[type='checkbox'] {
-    @apply h-5 w-5 rounded-md border-gray-300 text-black focus:ring-black/5 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
+    @apply h-5 w-5 rounded-md border-gray-300 text-primary-teal-500 focus:ring-primary-teal-500/10 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
   }
 
   input[type='radio'] {
-    @apply h-5 w-5 border-gray-300 text-black focus:ring-black/5 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
+    @apply h-5 w-5 border-gray-300 text-primary-teal-500 focus:ring-primary-teal-500/10 transition-all cursor-pointer shadow-sm disabled:opacity-50 !p-0;
   }
 }
 
-@layer components {
+/* @layer components {
   .btn-primary {
-    @apply bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 shadow-md transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+    @apply bg-primary-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-teal-600 shadow-md transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
   }
-}
+
+  /* ==================== GLASSMORPHISM UTILITIES ==================== */
+/* .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--backdrop-blur-strong));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur-strong));
+    border: 1px solid var(--glass-border-strong);
+    box-shadow: var(--glass-shadow-lg);
+  }
+
+  .glass-weak {
+    background: var(--glass-bg-weak);
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl p-6 transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    box-shadow: var(--glass-shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  /* ==================== GRADIENT UTILITIES ==================== */
+/* .gradient-bg {
+    background: var(--gradient-bg);
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-soft {
+    background: var(--gradient-soft);
+  }
+
+  /* ==================== DECORATIVE ELEMENTS ==================== */
+/* .decorative-orb {
+    @apply absolute rounded-full pointer-events-none;
+    background: var(--gradient-teal-glow);
+    filter: blur(60px);
+  }
+
+  .decorative-orb-lg {
+    @apply decorative-orb;
+    width: 400px;
+    height: 400px;
+  }
+
+  .decorative-orb-md {
+    @apply decorative-orb;
+    width: 300px;
+    height: 300px;
+  }
+
+  .decorative-orb-sm {
+    @apply decorative-orb;
+    width: 200px;
+    height: 200px;
+  }
+} */
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -152,9 +271,10 @@ body {
 
   --popover-foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.55 0.08 196);
+  /* Lighter teal for dark mode */
 
-  --primary-foreground: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.269 0 0);
 
@@ -174,9 +294,9 @@ body {
 
   --input: oklch(1 0 0 / 15%);
 
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.55 0.08 196);
 
-  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-1: oklch(0.55 0.08 196);
 
   --chart-2: oklch(0.696 0.17 162.48);
 
@@ -190,7 +310,7 @@ body {
 
   --sidebar-foreground: oklch(0.985 0 0);
 
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.55 0.08 196);
 
   --sidebar-primary-foreground: oklch(0.985 0 0);
 
@@ -200,7 +320,14 @@ body {
 
   --sidebar-border: oklch(1 0 0 / 10%);
 
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.55 0.08 196);
+
+  /* Dark mode glassmorphism */
+  --glass-bg: rgba(44, 129, 141, 0.15);
+  --glass-bg-strong: rgba(44, 129, 141, 0.25);
+  --glass-bg-weak: rgba(44, 129, 141, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.2);
 }
 
 @layer base {
@@ -228,11 +355,11 @@ body {
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Focus states */
+  /* Focus states with teal */
   .focus-ring:focus {
     outline: none;
-    box-shadow: 0 0 0 4px rgb(0 0 0 / 0.05);
-    border-color: #000;
+    box-shadow: 0 0 0 4px rgba(44, 129, 141, 0.1);
+    border-color: var(--color-primary-teal);
   }
 
   /* Interactive elements */
@@ -249,25 +376,47 @@ body {
     transform: translateY(0);
   }
 
-  /* Card styles */
+  /* Card styles with glass effect */
   .card {
     background-color: white;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     border: 1px solid rgb(229 231 235);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
   }
 
   .card-hover {
     background-color: white;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     border: 1px solid rgb(229 231 235);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-hover:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    border-color: rgb(209 213 219);
+    box-shadow: 0 8px 16px -4px rgb(44 129 141 / 0.15), 0 4px 8px -2px rgb(44 129 141 / 0.1);
+    border-color: rgb(197 231 236);
+    transform: translateY(-2px);
+  }
+
+  /* Teal color utilities */
+  .bg-teal-gradient {
+    background: var(--gradient-primary);
+  }
+
+  .text-teal {
+    color: var(--color-primary-teal);
+  }
+
+  .border-teal {
+    border-color: var(--color-primary-teal);
+  }
+
+  .shadow-teal {
+    box-shadow: 0 4px 14px 0 rgba(44, 129, 141, 0.2);
+  }
+
+  .shadow-teal-lg {
+    box-shadow: 0 10px 30px 0 rgba(44, 129, 141, 0.25);
   }
 }
 
@@ -288,4 +437,38 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Glow animation for interactive elements */
+@keyframes glow-teal {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(44, 129, 141, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(44, 129, 141, 0.5);
+  }
+}
+
+.animate-glow {
+  animation: glow-teal 3s ease-in-out infinite;
+}
+
+/* Floating animation for decorative elements */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

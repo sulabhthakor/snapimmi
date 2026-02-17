@@ -49,7 +49,7 @@ export function ReportsView({ firmId }: { firmId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Customers Report */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">
+                    <div className="h-10 w-10 bg-primary-teal-50 text-primary-teal-600 rounded-lg flex items-center justify-center mb-4">
                         <Users className="h-5 w-5" />
                     </div>
                     <h3 className="font-semibold text-gray-900">Customer Data</h3>
@@ -66,7 +66,7 @@ export function ReportsView({ firmId }: { firmId: string }) {
 
                 {/* Financial Report */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-10 w-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mb-4">
+                    <div className="h-10 w-10 bg-primary-teal-50 text-primary-teal-600 rounded-lg flex items-center justify-center mb-4">
                         <CreditCard className="h-5 w-5" />
                     </div>
                     <h3 className="font-semibold text-gray-900">Financial Records</h3>
@@ -83,7 +83,7 @@ export function ReportsView({ firmId }: { firmId: string }) {
 
                 {/* Applications Report */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-10 w-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
+                    <div className="h-10 w-10 bg-primary-teal-50 text-primary-teal-600 rounded-lg flex items-center justify-center mb-4">
                         <FileText className="h-5 w-5" />
                     </div>
                     <h3 className="font-semibold text-gray-900">Applications</h3>

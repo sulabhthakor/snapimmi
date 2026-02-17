@@ -26,7 +26,7 @@ export default async function FirmsPage() {
                     <p className="text-muted-foreground mt-2">Manage registered firms and their subscription status.</p>
                 </div>
                 <Link href="/dashboard/admin/firms/new">
-                    <Button className="bg-black hover:bg-gray-800 text-white gap-2">
+                    <Button className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 hover:from-primary-teal-600 hover:to-primary-teal-700 text-white gap-2 shadow-[0_4px_12px_0_rgba(44,129,141,0.3)] hover:shadow-[0_6px_16px_0_rgba(44,129,141,0.4)]">
                         <Plus className="h-4 w-4" />
                         Add New Firm
                     </Button>

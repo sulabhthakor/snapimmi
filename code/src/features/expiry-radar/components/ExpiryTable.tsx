@@ -143,7 +143,7 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${item.type === 'Passport' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                                <div className={`p-2 rounded-lg ${item.type === 'Passport' ? 'bg-primary-teal-50 text-primary-teal-600' : 'bg-primary-teal-100 text-primary-teal-700'}`}>
                                                     {item.type === 'Passport' ? <FileText className="h-4 w-4" /> : <Plane className="h-4 w-4" />}
                                                 </div>
                                                 <div>
@@ -208,7 +208,7 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                         >
                             <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className={`p-2 rounded-lg shrink-0 ${item.type === 'Passport' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                    <div className={`p-2 rounded-lg shrink-0 ${item.type === 'Passport' ? 'bg-primary-teal-50 text-primary-teal-600' : 'bg-primary-teal-100 text-primary-teal-700'}`}>
                                         {item.type === 'Passport' ? <FileText className="h-4 w-4" /> : <Plane className="h-4 w-4" />}
                                     </div>
                                     <div className="min-w-0">

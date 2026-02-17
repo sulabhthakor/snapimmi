@@ -149,7 +149,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                                         {(customer._count?.applications || 0) > 0 ? (
                                             <Link
                                                 href={`/dashboard/${firmId}/applications?customerId=${customer.id}`}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-xs font-semibold hover:bg-blue-100 hover:border-blue-200 transition-colors"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-teal-50 text-primary-teal-700 border border-primary-teal-100 text-xs font-semibold hover:bg-primary-teal-100 hover:border-primary-teal-200 transition-colors"
                                             >
                                                 <FileText className="h-3 w-3" />
                                                 {customer._count?.applications} Active
@@ -317,7 +317,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                             {(customer._count?.applications || 0) > 0 && (
                                 <Link
                                     href={`/dashboard/${firmId}/applications?customerId=${customer.id}`}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-teal-50 text-primary-teal-700 text-[11px] font-semibold"
                                 >
                                     <FileText className="h-3 w-3" />
                                     {customer._count?.applications} Apps

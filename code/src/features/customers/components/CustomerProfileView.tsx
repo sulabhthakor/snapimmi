@@ -87,27 +87,27 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
             />
 
             {/* Header Card */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-sm">
+            <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/30 p-5 sm:p-6 shadow-[0_8px_32px_0_rgba(44,129,141,0.15)]">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
                     <div className="flex items-center gap-4 sm:gap-5">
-                        <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg shadow-gray-200 shrink-0">
+                        <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-[0_8px_24px_0_rgba(44,129,141,0.3)] shrink-0">
                             {customer.fullName.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0">
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{customer.fullName}</h1>
-                            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
-                                <div className="flex items-center gap-1.5 font-mono text-xs bg-gray-100 px-2 py-1 rounded-lg">
+                            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
+                                <div className="flex items-center gap-1.5 font-mono text-xs bg-primary-teal-50 text-primary-teal-700 px-2.5 py-1 rounded-lg font-semibold">
                                     ID: {customer.id.slice(-4).toUpperCase()}
                                 </div>
                                 {(customer.email) && (
                                     <div className="flex items-center gap-1.5 truncate">
-                                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                                        <Mail className="h-3.5 w-3.5 shrink-0 text-primary-teal-500" />
                                         <span className="truncate">{customer.email}</span>
                                     </div>
                                 )}
                                 {(customer.phone) && (
                                     <div className="flex items-center gap-1.5">
-                                        <Phone className="h-3.5 w-3.5 shrink-0" />
+                                        <Phone className="h-3.5 w-3.5 shrink-0 text-primary-teal-500" />
                                         {customer.phone}
                                     </div>
                                 )}
@@ -117,14 +117,14 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                     <div className="flex gap-3 w-full md:w-auto">
                         <Link
                             href={`/dashboard/${firmId}/customers/${customer.id}/edit`}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-primary-teal-500/30 rounded-xl text-sm font-semibold text-primary-teal-700 hover:bg-primary-teal-50 hover:border-primary-teal-500 transition-all"
                         >
                             <Edit className="h-4 w-4" />
                             Edit
                         </Link>
                         <Link
                             href={`/dashboard/${firmId}/applications/new?customerId=${customer.id}`}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-black transition-all shadow-md"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white rounded-xl text-sm font-semibold hover:shadow-[0_8px_24px_0_rgba(44,129,141,0.3)] transform hover:-translate-y-0.5 transition-all shadow-[0_8px_16px_0_rgba(44,129,141,0.2)]"
                         >
                             <Plus className="h-4 w-4" />
                             New App
@@ -161,15 +161,15 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                             Active Passport
                         </h3>
-                        <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                        <button onClick={() => setIsPassportSheetOpen(true)} className="text-xs font-semibold text-primary-teal-600 hover:text-primary-teal-700 transition-colors">Manage</button>
                     </div>
                     {customer.passports?.[0] ? (
-                        <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                        <div className="p-4 rounded-xl bg-white/50 backdrop-blur-xl border border-primary-teal-200">
                             <div className="flex justify-between items-start mb-2">
-                                <div className="text-lg font-mono font-bold text-blue-900">{customer.passports[0].number}</div>
+                                <div className="text-lg font-mono font-bold text-primary-teal-900">{customer.passports[0].number}</div>
                                 <div className="text-xl">🇮🇳</div>
                             </div>
-                            <div className="text-xs text-blue-700">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
+                            <div className="text-xs text-primary-teal-700 font-medium">Expires: {new Date(customer.passports[0].expiryDate).toLocaleDateString()}</div>
                         </div>
                     ) : (
                         <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
@@ -185,7 +185,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                             Active Visa
                         </h3>
-                        <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-medium text-blue-600 hover:underline">Manage</button>
+                        <button onClick={() => setIsVisaSheetOpen(true)} className="text-xs font-semibold text-primary-teal-600 hover:text-primary-teal-700 transition-colors">Manage</button>
                     </div>
                     {customer.visas?.[0] ? (
                         <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
@@ -244,7 +244,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                                             </div>
                                         </div>
                                         {member.isFamilyHead && (
-                                            <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">HEAD</span>
+                                            <span className="text-[10px] font-bold bg-primary-teal-100 text-primary-teal-700 px-1.5 py-0.5 rounded">HEAD</span>
                                         )}
                                     </Link>
                                 ))}
@@ -273,10 +273,10 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={cn(
-                                "pb-3 pt-2 text-sm font-medium border-b-2 transition-all whitespace-nowrap px-2 sm:px-3 flex items-center gap-1.5 snap-start",
+                                "pb-3 pt-2 text-sm font-semibold border-b-2 transition-all duration-200 whitespace-nowrap px-2 sm:px-3 flex items-center gap-1.5 snap-start",
                                 activeTab === tab.id
-                                    ? "border-gray-900 text-gray-900"
-                                    : "border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-200"
+                                    ? "border-primary-teal-500 text-primary-teal-600"
+                                    : "border-transparent text-gray-400 hover:text-primary-teal-500 hover:border-primary-teal-200"
                             )}
                         >
                             <tab.icon className="h-4 w-4 hidden sm:block" />
@@ -284,7 +284,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                             {tab.count !== undefined && (
                                 <span className={cn(
                                     "px-1.5 py-0.5 rounded-full text-[10px] font-bold min-w-[20px] text-center",
-                                    activeTab === tab.id ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"
+                                    activeTab === tab.id ? "bg-primary-teal-500 text-white" : "bg-gray-100 text-gray-500"
                                 )}>
                                     {tab.count}
                                 </span>
@@ -503,7 +503,7 @@ export function CustomerProfileView({ customer, firmId }: CustomerProfileViewPro
                                                         <div className="font-medium text-sm text-gray-900 truncate">{doc.name}</div>
                                                         <div className="text-xs text-gray-500 mt-0.5">{doc.category}</div>
                                                     </div>
-                                                    <a href={doc.fileUrl} target="_blank" className="text-xs font-medium text-blue-600 px-3 py-1.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">View</a>
+                                                    <a href={doc.fileUrl} target="_blank" className="text-xs font-medium text-primary-teal-600 px-3 py-1.5 bg-primary-teal-50 rounded-lg hover:bg-primary-teal-100 transition-colors">View</a>
                                                 </div>
                                             </div>
                                         ))}

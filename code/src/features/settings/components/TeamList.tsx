@@ -67,11 +67,11 @@ export function TeamList({ firmId, members, currentUserRole }: { firmId: string,
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-1.5">
                                         {member.role === 'FIRM_OWNER' ? (
-                                            <Shield className="h-3 w-3 text-indigo-600" />
+                                            <Shield className="h-3 w-3 text-primary-teal-600" />
                                         ) : (
                                             <User className="h-3 w-3 text-gray-400" />
                                         )}
-                                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${member.role === 'FIRM_OWNER' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-700'}`}>
+                                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${member.role === 'FIRM_OWNER' ? 'bg-primary-teal-50 text-primary-teal-700' : 'bg-gray-100 text-gray-700'}`}>
                                             {member.role.replace('_', ' ')}
                                         </span>
                                     </div>

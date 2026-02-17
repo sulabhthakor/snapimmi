@@ -28,8 +28,8 @@ export function ApplicationDetailView({ application, firmId }: ApplicationDetail
 
     const statusColors = {
         PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        DOCUMENTS_COLLECTED: 'bg-blue-100 text-blue-800 border-blue-200',
-        APPLIED: 'bg-purple-100 text-purple-800 border-purple-200',
+        DOCUMENTS_COLLECTED: 'bg-primary-teal-100 text-primary-teal-800 border-primary-teal-200',
+        APPLIED: 'bg-primary-teal-200 text-primary-teal-900 border-primary-teal-300',
         APPROVED: 'bg-green-100 text-green-800 border-green-200',
         REJECTED: 'bg-red-100 text-red-800 border-red-200',
     };
@@ -152,13 +152,13 @@ export function ApplicationDetailView({ application, firmId }: ApplicationDetail
                             Applicant Details
                         </h3>
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
                                 {application.customer.fullName.charAt(0)}
                             </div>
                             <div>
                                 <Link
                                     href={`/dashboard/${firmId}/customers/${application.customerId}`}
-                                    className="block font-bold text-gray-900 hover:text-blue-600 hover:underline"
+                                    className="block font-bold text-gray-900 hover:text-primary-teal-600 hover:underline"
                                 >
                                     {application.customer.fullName}
                                 </Link>
@@ -218,7 +218,7 @@ export function ApplicationDetailView({ application, firmId }: ApplicationDetail
                                 <FileText className="h-5 w-5 text-gray-500" />
                                 Related Documents
                             </h3>
-                            <button className="text-sm font-medium text-blue-600 hover:underline">Upload Document</button>
+                            <button className="text-sm font-medium text-primary-teal-600 hover:underline">Upload Document</button>
                         </div>
                         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Filter docs for this application? 
@@ -229,7 +229,7 @@ export function ApplicationDetailView({ application, firmId }: ApplicationDetail
                             {application.customer.documents?.length > 0 ? (
                                 application.customer.documents.map((doc: any) => (
                                     <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group">
-                                        <div className="h-10 w-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 group-hover:text-blue-600 group-hover:bg-blue-50">
+                                        <div className="h-10 w-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 group-hover:text-primary-teal-600 group-hover:bg-primary-teal-50">
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div className="flex-1 min-w-0">

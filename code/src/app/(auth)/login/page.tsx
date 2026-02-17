@@ -1,6 +1,7 @@
 import LoginForm from './login-form';
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { DecorativeBackground } from '@/components/ui/DecorativeBackground';
 
 export const metadata: Metadata = {
     title: 'Login | SnapImmi',
@@ -9,16 +10,18 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
     return (
-        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 relative">
+            <DecorativeBackground variant="subtle" />
+
             {/* Left Side: Form */}
-            <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
+            <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="mx-auto w-full max-w-[350px] space-y-6">
                     <div className="flex flex-col space-y-2 text-center">
                         <Link href="/" className="mb-8 mx-auto flex items-center justify-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">S</span>
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 flex items-center justify-center shadow-lg shadow-primary-teal-500/30">
+                                <span className="text-white font-bold text-xl">S</span>
                             </div>
-                            <span className="text-xl font-bold tracking-tight text-gray-900">SnapImmi</span>
+                            <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-teal-600 to-primary-teal-500">SnapImmi</span>
                         </Link>
                         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
                             Welcome back
@@ -44,10 +47,9 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            {/* Right Side: Visual */}
-            <div className="hidden bg-gray-900 lg:block relative overflow-hidden">
-                {/* Abstract Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
+            <div className="hidden lg:block relative overflow-hidden">
+                {/* Teal Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-teal-600 via-primary-teal-500 to-primary-teal-700" />
                 <div className="absolute inset-0 opacity-20"
                     style={{
                         backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"

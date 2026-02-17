@@ -46,10 +46,10 @@
     /* ==================== COLORS ==================== */
     /* Semantic color naming for consistent usage */
 
-    /* Brand Primary */
-    --color-brand-primary: #000000;
-    --color-brand-primary-hover: #1a1a1a;
-    --color-brand-primary-active: #0a0a0a;
+    /* Brand Primary - Teal */
+    --color-brand-primary: #2c818d;
+    --color-brand-primary-hover: #3a9ca9;
+    --color-brand-primary-active: #226570;
 
     /* Neutral Grays */
     --color-gray-50: #f9fafb;
