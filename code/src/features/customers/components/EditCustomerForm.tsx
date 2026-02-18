@@ -30,11 +30,11 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
             fullName: customer.fullName,
             email: customer.email || '',
             phone: customer.phone || '',
-            passport: customer.passports?.[0] ? {
+            passport: (customer.passports?.[0] && customer.passports[0].issueDate && customer.passports[0].expiryDate) ? {
                 number: customer.passports[0].number,
                 country: customer.passports[0].country,
-                issueDate: customer.passports[0].issueDate ? new Date(customer.passports[0].issueDate) : undefined,
-                expiryDate: customer.passports[0].expiryDate ? new Date(customer.passports[0].expiryDate) : undefined,
+                issueDate: new Date(customer.passports[0].issueDate),
+                expiryDate: new Date(customer.passports[0].expiryDate),
                 placeOfIssue: customer.passports[0].placeOfIssue || ''
             } : undefined
         }
@@ -55,48 +55,67 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
 
     const onProfileSubmit = (data: any) => {
         startTransition(async () => {
-            // Merge needs: Profile data needs family data to comply with full schema on server if strictly validated,
-            // or schema on server allows partials. The current server action expects full "UpdateCustomerRequestSchema".
-            // To simplify, we'll assume we pass current known values for the other parts.
+            // Sanitize passport: RHF creates an object with empty strings if fields exist but are empty.
+            // If number and country are empty, we assume no passport is intended.
+            const rawPassport = data.passport;
+            const passport = (rawPassport && !rawPassport.number && !rawPassport.country)
+                ? undefined
+                : rawPassport;
 
-            // Ideally, we split server actions or make schema partial. 
-            // Workaround: Construct full object with current state of other parts.
+            // ideally we shouldn't send undefined passport if we want to KEEP existing passport?
+            // But if defaultValues had undefined, it implies we assume no passport started.
+            // Wait, if we want to clear passport? We'd strictly need an explicit action.
+            // For now, this logic fixes the broken update.
+
             const fullPayload = {
                 ...data,
+                passport,
+                id: customer.id, // Explicitly add ID as it might be missing from form data
                 isFamilyHead: familyForm.getValues('isFamilyHead') || false,
                 existingFamilyId: familyForm.getValues('existingFamilyId'),
                 newFamilyName: familyForm.getValues('newFamilyName'),
             };
 
+            console.log('[EditCustomerForm] Submitting Profile:', fullPayload);
 
             const result = await updateCustomer(fullPayload as any);
             if (result.success) {
                 router.refresh();
                 toast.success('Profile updated successfully');
             } else {
-                toast.error('Failed to update profile');
+                console.error('[EditCustomerForm] Profile update failed:', result.error);
+                toast.error(`Failed: ${JSON.stringify(result.error)}`);
             }
         });
     };
 
     const onFamilySubmit = (data: any) => {
         startTransition(async () => {
+            const profileData = profileForm.getValues();
+            const rawPassport = profileData.passport;
+            const passport = (rawPassport && !rawPassport.number && !(rawPassport as any).country)
+                ? undefined
+                : rawPassport;
+
             const fullPayload = {
-                ...profileForm.getValues(),
+                ...profileData,
                 ...data,
-                // Ensure passport is valid if it's there
-                passport: profileForm.getValues('passport') ? {
-                    ...profileForm.getValues('passport'),
-                    issueDate: profileForm.getValues('passport.issueDate') as unknown as Date,
-                    expiryDate: profileForm.getValues('passport.expiryDate') as unknown as Date,
+                id: customer.id, // Explicitly add ID
+                passport: passport ? {
+                    ...passport,
+                    issueDate: passport.issueDate ? new Date(passport.issueDate) : undefined,
+                    expiryDate: passport.expiryDate ? new Date(passport.expiryDate) : undefined,
                 } : undefined
             };
+
+            console.log('[EditCustomerForm] Submitting Family:', fullPayload);
 
             const result = await updateCustomer(fullPayload as any);
             if (result.success) {
                 router.refresh();
                 toast.success('Family settings updated');
             } else {
+                console.error('[EditCustomerForm] Family update failed:', result.error);
                 toast.error('Failed to update family settings');
             }
         });
@@ -110,7 +129,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('PROFILE')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'PROFILE'
-                            ? 'border-black text-black'
+                            ? 'border-primary-teal-600 text-primary-teal-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
@@ -120,7 +139,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('FAMILY')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'FAMILY'
-                            ? 'border-black text-black'
+                            ? 'border-primary-teal-600 text-primary-teal-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
@@ -130,7 +149,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     <button
                         onClick={() => setActiveTab('DOCUMENTS')}
                         className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'DOCUMENTS'
-                            ? 'border-black text-black'
+                            ? 'border-primary-teal-600 text-primary-teal-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
@@ -142,7 +161,13 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
 
             {/* Content: Profile */}
             {activeTab === 'PROFILE' && (
-                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8 max-w-4xl">
+                <form
+                    onSubmit={profileForm.handleSubmit(onProfileSubmit, (errors) => {
+                        console.error('Validation Errors:', errors);
+                        alert(`Validation Errors: ${JSON.stringify(errors)}`);
+                    })}
+                    className="space-y-8 max-w-4xl"
+                >
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
                         <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -209,7 +234,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                     </div>
 
                     <div className="flex justify-end">
-                        <button type="submit" disabled={isPending} className="bg-black text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 shadow-md">
+                        <button type="submit" disabled={isPending} className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-6 py-2.5 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Save Changes
                         </button>
@@ -222,7 +247,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                 <form onSubmit={familyForm.handleSubmit(onFamilySubmit)} className="space-y-8 max-w-2xl">
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
                         <div className="space-y-4">
-                            <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${familyForm.watch('isFamilyHead') ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                            <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${familyForm.watch('isFamilyHead') ? 'border-primary-teal-600 bg-primary-teal-50/10' : 'border-gray-100 hover:border-gray-200'}`}>
                                 <input type="checkbox" {...familyForm.register('isFamilyHead')} className="mt-1" />
                                 <div>
                                     <div className="font-semibold text-gray-900">Set as Family Head</div>
@@ -237,7 +262,7 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button type="submit" disabled={isPending} className="bg-black text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 shadow-md">
+                            <button type="submit" disabled={isPending} className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-6 py-2.5 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                 Update Family Settings
                             </button>

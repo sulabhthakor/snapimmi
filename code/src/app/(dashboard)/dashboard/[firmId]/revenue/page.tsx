@@ -52,19 +52,19 @@ export default async function RevenuePage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Total Revenue */}
                 <Link href={`/dashboard/${firmId}/revenue`}>
-                    <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-6 shadow-lg ring-1 ring-white/10 cursor-pointer hover:scale-105 transition-transform">
+                    <div className="bg-gradient-to-br from-primary-teal-500 to-primary-teal-700 text-white rounded-xl p-6 shadow-lg shadow-primary-teal-900/20 ring-1 ring-white/10 cursor-pointer hover:scale-105 transition-transform">
                         <div className="flex items-start justify-between">
                             <div>
-                                <div className="text-gray-400 text-sm font-medium mb-1">Total Revenue (YTD)</div>
+                                <div className="text-primary-teal-50 text-sm font-medium mb-1">Total Revenue (YTD)</div>
                                 <div className="text-3xl font-bold tracking-tight">
                                     {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(stats.totalRevenue)}
                                 </div>
                             </div>
                             <div className="p-2 bg-white/10 rounded-lg">
-                                <DollarSign className="h-5 w-5 text-green-400" />
+                                <DollarSign className="h-5 w-5 text-white" />
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 text-green-400 text-xs font-medium mt-4">
+                        <div className="flex items-center gap-1 text-primary-teal-50 text-xs font-medium mt-4">
                             <ArrowUpRight className="h-3 w-3" />
                             {stats.monthlyGrowth > 0 ? '+' : ''}{stats.monthlyGrowth.toFixed(1)}% vs last month
                         </div>
@@ -98,8 +98,8 @@ export default async function RevenuePage({
                                 {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(stats.avgDealSize)}
                             </div>
                         </div>
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                            <TrendingUp className="h-5 w-5 text-blue-600" />
+                        <div className="p-2 bg-primary-teal-50 rounded-lg">
+                            <TrendingUp className="h-5 w-5 text-primary-teal-600" />
                         </div>
                     </div>
                     <div className="flex items-center gap-1 text-gray-400 text-xs font-medium mt-4">
@@ -117,7 +117,7 @@ export default async function RevenuePage({
                     <div className="rounded-xl border border-gray-200 bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
                         <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between">
                             <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
-                            <button className="text-sm font-medium text-gray-600 hover:text-black hover:underline">View All</button>
+                            <button className="text-sm font-medium text-gray-600 hover:text-primary-teal-600 hover:underline">View All</button>
                         </div>
 
                         {/* Desktop Table */}
@@ -167,7 +167,7 @@ export default async function RevenuePage({
                                     <div key={trx.id} className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0">
+                                                <div className="h-9 w-9 rounded-full bg-primary-teal-50 flex items-center justify-center text-xs font-bold text-primary-teal-700 shrink-0">
                                                     {trx.customerAvatar}
                                                 </div>
                                                 <div className="min-w-0">
@@ -210,8 +210,8 @@ export default async function RevenuePage({
                                     const heightPct = maxVal > 0 ? (d.revenue / maxVal) * 100 : 0;
 
                                     return (
-                                        <div key={i} className="w-full bg-blue-50 hover:bg-blue-100 rounded-t-sm relative group transition-colors flex flex-col justify-end" style={{ height: '100%' }}>
-                                            <div className="w-full bg-blue-600 rounded-t-sm transition-all duration-500" style={{ height: `${heightPct}%` }}></div>
+                                        <div key={i} className="w-full bg-primary-teal-50 hover:bg-primary-teal-100 rounded-t-sm relative group transition-colors flex flex-col justify-end" style={{ height: '100%' }}>
+                                            <div className="w-full bg-primary-teal-600 rounded-t-sm transition-all duration-500" style={{ height: `${heightPct}%` }}></div>
                                             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap shadow-xl">
                                                 {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(d.revenue)}
                                             </div>

@@ -116,7 +116,7 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                         {/* Visa Info Section */}
                         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3 bg-emerald-500 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Visa Info
                             </h3>
 
@@ -124,10 +124,10 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                                 <div className="col-span-2 space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Visa Number</label>
                                     <div className="relative group">
-                                        <Hash className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                                        <Hash className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('number')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-emerald-500 rounded-lg text-sm font-medium transition-all outline-none placeholder:text-gray-400"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm font-medium transition-all outline-none placeholder:text-gray-400"
                                             placeholder="V12345678"
                                         />
                                     </div>
@@ -136,10 +136,10 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Type</label>
                                     <div className="relative group">
-                                        <FileBadge className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                                        <FileBadge className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('type')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-emerald-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                             placeholder="Student"
                                         />
                                     </div>
@@ -149,10 +149,10 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Country</label>
                                     <div className="relative group">
-                                        <Globe className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                                        <Globe className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('country')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-emerald-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                             placeholder="Canada"
                                         />
                                     </div>
@@ -164,7 +164,7 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                         {/* Validity Section */}
                         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3 bg-teal-500 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Validity
                             </h3>
 
@@ -172,22 +172,22 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Grant Date</label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
+                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             type="date"
                                             {...form.register('grantDate')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-teal-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Expiry Date</label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
+                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             type="date"
                                             {...form.register('expiryDate')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-teal-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -197,21 +197,21 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                         {/* File Upload Section */}
                         <div className="space-y-2">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 px-1">
-                                <span className="w-1 h-3 bg-slate-800 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Document
                             </h3>
 
                             <div className={cn(
                                 "relative border border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group overflow-hidden bg-white hover:bg-gray-50",
-                                fileUrl ? "border-emerald-200 bg-emerald-50/30" : "border-gray-300"
+                                fileUrl ? "border-primary-teal-200 bg-primary-teal-50/30" : "border-gray-300"
                             )}>
                                 {fileUrl ? (
                                     <>
-                                        <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-1">
+                                        <div className="h-10 w-10 bg-primary-teal-100 rounded-full flex items-center justify-center text-primary-teal-600 mb-1">
                                             <CheckCircle2 className="h-5 w-5" />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-sm font-bold text-emerald-900">Visa Added</p>
+                                            <p className="text-sm font-bold text-primary-teal-900">Visa Added</p>
                                         </div>
                                         <button
                                             type="button"
@@ -223,7 +223,7 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                                     </>
                                 ) : (
                                     <label className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center z-0">
-                                        <Upload className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 mb-1" />
+                                        <Upload className="h-5 w-5 text-gray-400 group-hover:text-primary-teal-500 mb-1" />
                                         <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900">Upload Visa</span>
                                         <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*,.pdf" />
                                     </label>
@@ -247,7 +247,7 @@ export function EditVisaSheet({ customer, isOpen, onClose }: EditVisaSheetProps)
                         type="submit"
                         form="visa-form"
                         disabled={isPending}
-                        className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 hover:from-primary-teal-600 hover:to-primary-teal-700 rounded-lg shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
                     >
                         {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                         Save

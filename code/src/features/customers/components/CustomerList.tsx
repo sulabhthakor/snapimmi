@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useTransition } from 'react';
+import { useState, useCallback, useTransition, useEffect } from 'react';
 import { Customer } from '../types';
 import { getCustomers, deleteCustomer } from '../server/actions';
 import { useParams, useRouter } from 'next/navigation';
@@ -20,45 +20,65 @@ import { CustomSelect } from '@/components/ui/CustomSelect';
 export function CustomerList({ initialData }: { initialData: { data: Customer[], total: number } }) {
     const [customers, setCustomers] = useState(initialData.data);
     const [totalCustomers, setTotalCustomers] = useState(initialData.total);
+
+    useEffect(() => {
+        setCustomers(initialData.data);
+        setTotalCustomers(initialData.total);
+    }, [initialData]);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'LEAD' | 'ACTIVE'>('ALL');
+    const [sortBy, setSortBy] = useState<'createdAt' | 'fullName' | 'applicationCount'>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [isPending, startTransition] = useTransition();
     const params = useParams();
     const router = useRouter();
     const firmId = params.firmId as string;
     const LIMIT = 10;
 
-    const handleSearch = useCallback((term: string) => {
-        setSearchTerm(term);
+    const fetchCustomers = (override?: any) => {
         startTransition(async () => {
-            const result = await getCustomers({ search: term, page: 1, limit: LIMIT, status: statusFilter });
+            const result = await getCustomers({
+                search: override?.search ?? searchTerm,
+                page: override?.page ?? 1,
+                limit: LIMIT,
+                status: override?.status ?? statusFilter,
+                sortBy: override?.sortBy ?? sortBy,
+                sortOrder: override?.sortOrder ?? sortOrder
+            });
             // @ts-ignore
             setCustomers(result.data);
             setTotalCustomers(result.total);
-            setCurrentPage(1);
+            if (override?.page) setCurrentPage(override.page);
+            else if (override?.search || override?.status) setCurrentPage(1);
         });
-    }, [statusFilter]);
+    }
+
+    const handleSearch = (term: string) => {
+        setSearchTerm(term);
+        fetchCustomers({ search: term, page: 1 });
+    };
 
     const handleStatusChange = (newStatus: 'ALL' | 'LEAD' | 'ACTIVE') => {
         setStatusFilter(newStatus);
-        startTransition(async () => {
-            const result = await getCustomers({ search: searchTerm, page: 1, limit: LIMIT, status: newStatus });
-            // @ts-ignore
-            setCustomers(result.data);
-            setTotalCustomers(result.total);
-            setCurrentPage(1);
-        });
+        fetchCustomers({ status: newStatus, page: 1 });
     };
 
     const handlePageChange = (newPage: number) => {
-        startTransition(async () => {
-            const result = await getCustomers({ search: searchTerm, page: newPage, limit: LIMIT, status: statusFilter });
-            // @ts-ignore
-            setCustomers(result.data);
-            setCurrentPage(newPage);
-        });
+        fetchCustomers({ page: newPage });
     };
+
+    const handleSort = (field: 'createdAt' | 'fullName' | 'applicationCount') => {
+        const newOrder = sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc';
+        setSortBy(field);
+        setSortOrder(newOrder);
+        fetchCustomers({ sortBy: field, sortOrder: newOrder, page: 1 });
+    };
+
+    const SortIcon = ({ field }: { field: typeof sortBy }) => {
+        if (sortBy !== field) return <div className="w-4 h-4" />; // Placeholder
+        return sortOrder === 'asc' ? <span className="text-primary-teal-600">↑</span> : <span className="text-primary-teal-600">↓</span>;
+    }
 
     // Helper to get initials
     const getInitials = (name: string) => {
@@ -81,7 +101,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     <input
                         type="text"
                         placeholder="Search by name, email, or phone..."
-                        className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all shadow-sm"
+                        className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-primary-teal-500 focus:outline-none focus:ring-1 focus:ring-primary-teal-500 transition-all shadow-sm"
                         onChange={(e) => handleSearch(e.target.value)}
                     />
                 </div>
@@ -99,7 +119,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     </div>
                     <Link
                         href={`/dashboard/${firmId}/customers/new`}
-                        className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap shrink-0"
+                        className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:from-primary-teal-600 hover:to-primary-teal-700 focus:outline-none focus:ring-2 focus:ring-primary-teal-500 focus:ring-offset-2 transition-all shadow-md shadow-primary-teal-100 hover:shadow-lg whitespace-nowrap shrink-0"
                     >
                         <Plus className="h-4 w-4" />
                         <span className="hidden sm:inline">Add Customer</span>
@@ -114,9 +134,17 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 font-bold text-gray-900 tracking-tight">Customer</th>
+                                <th className="px-6 py-4 font-bold text-gray-900 tracking-tight cursor-pointer hover:bg-gray-100 transition-colors group" onClick={() => handleSort('fullName')}>
+                                    <div className="flex items-center gap-1">
+                                        Customer <SortIcon field="fullName" />
+                                    </div>
+                                </th>
                                 <th className="px-6 py-4 font-bold text-gray-900 tracking-tight">Contact Info</th>
-                                <th className="px-6 py-4 font-bold text-gray-900 tracking-tight">Active Apps</th>
+                                <th className="px-6 py-4 font-bold text-gray-900 tracking-tight cursor-pointer hover:bg-gray-100 transition-colors group" onClick={() => handleSort('applicationCount')}>
+                                    <div className="flex items-center gap-1">
+                                        Active Apps <SortIcon field="applicationCount" />
+                                    </div>
+                                </th>
                                 <th className="px-6 py-4 font-bold text-gray-900 tracking-tight">Documents</th>
                                 <th className="px-6 py-4 text-right font-bold text-gray-900 tracking-tight">Actions</th>
                             </tr>
@@ -130,7 +158,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-white group-hover:ring-gray-100 transition-all">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-teal-500 to-primary-teal-700 flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-white group-hover:ring-primary-teal-50 transition-all">
                                                 {getInitials(customer.fullName)}
                                             </div>
                                             <div>
@@ -170,7 +198,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <button className="text-gray-400 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-full focus:outline-none data-[state=open]:bg-gray-100 data-[state=open]:text-black">
+                                                <button className="text-gray-400 hover:text-primary-teal-600 transition-colors p-2 hover:bg-primary-teal-50 rounded-full focus:outline-none data-[state=open]:bg-primary-teal-50 data-[state=open]:text-primary-teal-600">
                                                     <MoreHorizontal className="h-5 w-5" />
                                                 </button>
                                             </DropdownMenuTrigger>
@@ -218,7 +246,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                                             <p className="text-sm">Get started by creating your first customer.</p>
                                             <Link
                                                 href={`/dashboard/${firmId}/customers/new`}
-                                                className="mt-4 text-sm font-medium text-black hover:underline"
+                                                className="mt-4 text-sm font-medium text-primary-teal-600 hover:underline hover:text-primary-teal-700"
                                             >
                                                 Add New Customer
                                             </Link>
@@ -240,14 +268,14 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1 || isPending}
-                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1 rounded border bg-white hover:bg-primary-teal-50 hover:text-primary-teal-700 hover:border-primary-teal-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Previous
                             </button>
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage * LIMIT >= totalCustomers || isPending}
-                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1 rounded border bg-white hover:bg-primary-teal-50 hover:text-primary-teal-700 hover:border-primary-teal-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Next
                             </button>
@@ -266,7 +294,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                     >
                         <div className="flex items-center justify-between mb-2.5">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-teal-500 to-primary-teal-700 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
                                     {getInitials(customer.fullName)}
                                 </div>
                                 <div className="min-w-0">
@@ -277,7 +305,7 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                             <div onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="text-gray-400 hover:text-black transition-colors p-1.5 hover:bg-gray-100 rounded-full focus:outline-none">
+                                        <button className="text-gray-400 hover:text-primary-teal-600 transition-colors p-1.5 hover:bg-primary-teal-50 rounded-full focus:outline-none">
                                             <MoreHorizontal className="h-4 w-4" />
                                         </button>
                                     </DropdownMenuTrigger>
@@ -361,14 +389,14 @@ export function CustomerList({ initialData }: { initialData: { data: Customer[],
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1 || isPending}
-                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1 rounded border bg-white hover:bg-primary-teal-50 hover:text-primary-teal-700 hover:border-primary-teal-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Prev
                             </button>
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage * LIMIT >= totalCustomers || isPending}
-                                className="px-3 py-1 rounded border bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1 rounded border bg-white hover:bg-primary-teal-50 hover:text-primary-teal-700 hover:border-primary-teal-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Next
                             </button>

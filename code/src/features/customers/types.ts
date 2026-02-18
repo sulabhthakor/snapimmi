@@ -13,8 +13,8 @@ export const CustomerSchema = z.object({
 export const PassportSchema = z.object({
     number: z.string().min(3, "Passport number is required"),
     country: z.string().min(2, "Country is required"),
-    issueDate: z.coerce.date(),
-    expiryDate: z.coerce.date(),
+    issueDate: z.coerce.date().nullable().optional(),
+    expiryDate: z.coerce.date().nullable().optional(),
     placeOfIssue: z.string().optional(),
     frontImage: z.string().optional(),
     backImage: z.string().optional(),
@@ -30,7 +30,7 @@ export const VisaSchema = z.object({
 });
 
 export const CreateCustomerRequestSchema = z.object({
-    fullName: z.string().min(2, "Name must be at least 2 characters"),
+    fullName: z.string().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
     email: z.string().email().optional().or(z.literal("")),
     phone: z.string().min(10, "Phone number is required"),
     passport: PassportSchema.optional(),
@@ -63,6 +63,8 @@ export const CustomerFiltersSchema = z.object({
     search: z.string().optional(),
     page: z.number().default(1),
     limit: z.number().default(10),
+    sortBy: z.enum(["createdAt", "fullName", "applicationCount"]).optional().default("createdAt"),
+    sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export type CustomerFilters = z.infer<typeof CustomerFiltersSchema>;

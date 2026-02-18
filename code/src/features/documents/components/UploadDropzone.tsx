@@ -145,7 +145,7 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-4 border-b border-gray-100">
                     <h3 className="font-semibold text-gray-900">Upload Documents</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
+                    <button onClick={onClose} className="text-gray-400 hover:text-primary-teal-600 transition-colors">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
@@ -157,7 +157,7 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                             <label className="text-sm font-medium text-gray-700">Link to Customer</label>
                             <div className="relative">
                                 <div
-                                    className="flex items-center gap-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus-within:border-black focus-within:ring-1 focus-within:ring-black cursor-text"
+                                    className="flex items-center gap-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus-within:border-primary-teal-500 focus-within:ring-1 focus-within:ring-primary-teal-500 cursor-text"
                                     onClick={() => setShowCustomerDropdown(true)}
                                 >
                                     <Search className="h-4 w-4 text-gray-400" />
@@ -203,7 +203,7 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                                                             <div className="text-xs text-gray-500">{customer.email}</div>
                                                         </div>
                                                         {selectedCustomerId === customer.id && (
-                                                            <Check className="h-4 w-4 text-black" />
+                                                            <Check className="h-4 w-4 text-primary-teal-600" />
                                                         )}
                                                     </button>
                                                 ))
@@ -223,13 +223,16 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-teal-500 focus:outline-none focus:ring-1 focus:ring-primary-teal-500"
                         >
-                            <option value="General">General</option>
-                            <option value="ID Proof">ID Proof</option>
-                            <option value="Financial">Financial</option>
-                            <option value="Legal">Legal</option>
-                            <option value="Application">Application</option>
+                            <option value="OTHER">General</option>
+                            <option value="ID_PROOF">ID Proof</option>
+                            <option value="FINANCIAL">Financial</option>
+                            <option value="LEGAL">Legal</option>
+                            <option value="EDUCATIONAL">Educational</option>
+                            <option value="EMPLOYMENT">Employment</option>
+                            <option value="PASSPORT">Passport</option>
+                            <option value="VISA">Visa</option>
                         </select>
                     </div>
 
@@ -240,14 +243,14 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${isDragging
                             ? 'border-primary-teal-500 bg-primary-teal-50/50 scale-[1.02]'
-                            : 'border-gray-200 hover:border-black hover:bg-gray-50'
+                            : 'border-gray-200 hover:border-primary-teal-400 hover:bg-primary-teal-50/10'
                             }`}
                     >
                         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                             <UploadCloud className="h-6 w-6" />
                         </div>
                         <p className="text-sm font-medium text-gray-900">
-                            <label className="text-blue-600 hover:underline cursor-pointer">
+                            <label className="text-primary-teal-600 hover:underline cursor-pointer">
                                 Click to upload
                                 <input type="file" className="hidden" multiple onChange={handleFileSelect} />
                             </label>
@@ -277,13 +280,13 @@ export function UploadDropzone({ onClose, customerId, applicationId, defaultCate
                 </div>
 
                 <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all">
+                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary-teal-600 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all">
                         Cancel
                     </button>
                     <button
                         onClick={handleUpload}
                         disabled={files.length === 0 || isUploading || !(customerId || selectedCustomerId)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
                     >
                         {isUploading ? <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</> : 'Upload Files'}
                     </button>

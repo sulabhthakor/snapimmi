@@ -51,7 +51,7 @@ export function ExportButton({ firmId }: ExportButtonProps) {
         <button
             onClick={handleExport}
             disabled={isExporting}
-            className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 flex items-center gap-2 shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-primary-teal-600 hover:to-primary-teal-700 flex items-center gap-2 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
             <Download className="h-4 w-4" />
             {isExporting ? 'Exporting...' : 'Export Report'}

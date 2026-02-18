@@ -23,7 +23,6 @@ const PRIORITY_COLORS: Record<Priority, string> = {
 export function ApplicationTable({ initialData, firmId }: ApplicationTableProps) {
     const [applications, setApplications] = useState<Application[]>(initialData);
     const [isPending, startTransition] = useTransition();
-    const [editingApp, setEditingApp] = useState<Application | null>(null);
     const [filters, setFilters] = useState({
         search: '',
         status: 'ALL',
@@ -116,7 +115,7 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
                             {applications.map((app) => (
                                 <tr
                                     key={app.id}
-                                    onClick={() => setEditingApp(app)}
+                                    onClick={() => router.push(`/dashboard/${firmId}/applications/${app.id}`)}
                                     className="group hover:bg-gray-50 transition-colors cursor-pointer"
                                 >
                                     <td className="px-6 py-4">
@@ -168,7 +167,7 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
                 {applications.map((app) => (
                     <div
                         key={app.id}
-                        onClick={() => setEditingApp(app)}
+                        onClick={() => router.push(`/dashboard/${firmId}/applications/${app.id}`)}
                         className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
                     >
                         <div className="flex items-center justify-between mb-2">
@@ -203,22 +202,6 @@ export function ApplicationTable({ initialData, firmId }: ApplicationTableProps)
                 )}
             </div>
 
-            {/* Edit Sheet */}
-            {editingApp && (
-                <EditApplicationSheet
-                    application={editingApp}
-                    isOpen={!!editingApp}
-                    onClose={() => {
-                        setEditingApp(null);
-                        // Refresh list logic is inside sheet but we might need to trigger re-fetch here if needed
-                        // Ideally router.refresh() in sheet handles it, but local state needs update?
-                        // For simplicity, just refetching when sheet closes or relying on router refresh + effect?
-                        // The sheet calls router.refresh(). If we want table to update immediately without full page reload,
-                        // we should pass a callback.
-                        fetchApplications(filters);
-                    }}
-                />
-            )}
         </div>
     );
 }

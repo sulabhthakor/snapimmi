@@ -127,10 +127,10 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 <div className="col-span-2 space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Passport Number</label>
                                     <div className="relative group">
-                                        <Hash className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <Hash className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('number')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-blue-500 rounded-lg text-sm font-medium transition-all outline-none uppercase placeholder:text-gray-400"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm font-medium transition-all outline-none uppercase placeholder:text-gray-400"
                                             placeholder="A1234567"
                                         />
                                     </div>
@@ -140,10 +140,10 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Country</label>
                                     <div className="relative group">
-                                        <Globe className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <Globe className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('country')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-blue-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                             placeholder="India"
                                         />
                                     </div>
@@ -152,10 +152,10 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Place of Issue</label>
                                     <div className="relative group">
-                                        <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             {...form.register('placeOfIssue')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-blue-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                             placeholder="Mumbai"
                                         />
                                     </div>
@@ -174,22 +174,22 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Issue Date</label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             type="date"
                                             {...form.register('issueDate')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-indigo-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Expiry Date</label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <Calendar className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-400 group-focus-within:text-primary-teal-500 transition-colors" />
                                         <input
                                             type="date"
                                             {...form.register('expiryDate')}
-                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-indigo-500 rounded-lg text-sm transition-all outline-none"
+                                            className="w-full pl-9 pr-3 py-2 bg-gray-50 border-transparent focus:bg-white border focus:border-primary-teal-500 rounded-lg text-sm transition-all outline-none"
                                         />
                                     </div>
                                 </div>
@@ -199,7 +199,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                         {/* File Uploads Section */}
                         <div className="space-y-2">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 px-1">
-                                <span className="w-1 h-3 bg-slate-800 rounded-full"></span>
+                                <span className="w-1 h-3 bg-primary-teal-600 rounded-full"></span>
                                 Scans
                             </h3>
 
@@ -211,11 +211,11 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 )}>
                                     {files.front ? (
                                         <>
-                                            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                            <div className="h-8 w-8 bg-primary-teal-100 rounded-full flex items-center justify-center text-primary-teal-600">
                                                 <CheckCircle2 className="h-4 w-4" />
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-xs font-bold text-blue-900">Front Added</p>
+                                                <p className="text-xs font-bold text-primary-teal-900">Front Added</p>
                                             </div>
                                             <button
                                                 type="button"
@@ -227,7 +227,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                         </>
                                     ) : (
                                         <label className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center z-0">
-                                            <Upload className="h-4 w-4 text-gray-400 group-hover:text-blue-500 mb-1" />
+                                            <Upload className="h-4 w-4 text-gray-400 group-hover:text-primary-teal-500 mb-1" />
                                             <span className="text-xs font-medium text-gray-600 group-hover:text-gray-900">Front Page</span>
                                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'front')} accept="image/*,.pdf" />
                                         </label>
@@ -241,11 +241,11 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                 )}>
                                     {files.back ? (
                                         <>
-                                            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                            <div className="h-8 w-8 bg-primary-teal-100 rounded-full flex items-center justify-center text-primary-teal-600">
                                                 <CheckCircle2 className="h-4 w-4" />
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-xs font-bold text-blue-900">Back Added</p>
+                                                <p className="text-xs font-bold text-primary-teal-900">Back Added</p>
                                             </div>
                                             <button
                                                 type="button"
@@ -257,7 +257,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                                         </>
                                     ) : (
                                         <label className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center z-0">
-                                            <Upload className="h-4 w-4 text-gray-400 group-hover:text-blue-500 mb-1" />
+                                            <Upload className="h-4 w-4 text-gray-400 group-hover:text-primary-teal-500 mb-1" />
                                             <span className="text-xs font-medium text-gray-600 group-hover:text-gray-900">Back Page</span>
                                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'back')} accept="image/*,.pdf" />
                                         </label>
@@ -282,7 +282,7 @@ export function EditPassportSheet({ customer, isOpen, onClose }: EditPassportShe
                         type="submit"
                         form="passport-form"
                         disabled={isPending}
-                        className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 hover:from-primary-teal-600 hover:to-primary-teal-700 rounded-lg shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
                     >
                         {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                         Save

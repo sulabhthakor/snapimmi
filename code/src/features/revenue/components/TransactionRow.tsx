@@ -33,13 +33,13 @@ export function TransactionRow({ transaction, firmId }: TransactionRowProps) {
         >
             <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center text-xs font-bold text-indigo-600 ring-2 ring-white">
+                    <div className="h-9 w-9 rounded-full bg-primary-teal-50 flex items-center justify-center text-xs font-bold text-primary-teal-700 ring-2 ring-white">
                         {transaction.customerAvatar}
                     </div>
                     <div>
                         <Link
                             href={`/dashboard/${firmId}/customers/${transaction.customerId}`}
-                            className="font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                            className="font-medium text-gray-900 hover:text-primary-teal-600 hover:underline"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {transaction.customerName}

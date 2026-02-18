@@ -215,10 +215,10 @@ export function NewCustomerWizard() {
                         const isCurrent = step === s.id;
                         return (
                             <div key={s.id} className="flex flex-col items-center gap-2 bg-gray-50 px-4 cursor-pointer" onClick={() => step > s.id && setStep(s.id)}>
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isActive ? 'bg-black border-black text-white' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isActive ? 'bg-primary-teal-600 border-primary-teal-600 text-white shadow-md shadow-primary-teal-200' : 'bg-white border-gray-200 text-gray-400'}`}>
                                     <s.icon className="h-4 w-4" />
                                 </div>
-                                <span className={`text-xs font-medium ${isCurrent ? 'text-black' : 'text-gray-500'}`}>{s.title}</span>
+                                <span className={`text-xs font-medium ${isCurrent ? 'text-primary-teal-700 font-bold' : 'text-gray-500'}`}>{s.title}</span>
                             </div>
                         )
                     })}
@@ -265,13 +265,13 @@ export function NewCustomerWizard() {
                                     type="button"
                                     onClick={step1Form.handleSubmit(onSaveLead)}
                                     disabled={isPending}
-                                    className="text-gray-600 hover:text-black hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    className="text-gray-600 hover:text-primary-teal-600 hover:bg-primary-teal-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                                 >
                                     <Save className="h-4 w-4" />
                                     {isPending ? 'Saving...' : 'Save as Lead & Exit'}
                                 </button>
 
-                                <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                <button type="submit" className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-8 py-3 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium inline-flex items-center gap-2 transition-all shadow-md shadow-primary-teal-100 hover:shadow-lg transform hover:-translate-y-0.5">
                                     Continue <ArrowRight className="h-4 w-4" />
                                 </button>
                             </div>
@@ -285,7 +285,7 @@ export function NewCustomerWizard() {
                                 <h2 className="text-xl font-bold text-gray-900 mb-6">Travel Documents</h2>
 
                                 {/* Passport Section */}
-                                <div className={`p-4 rounded-xl border-2 transition-all mb-6 ${showPassport ? 'border-black bg-gray-50' : 'border-gray-100 bg-white'}`}>
+                                <div className={`p-4 rounded-xl border-2 transition-all mb-6 ${showPassport ? 'border-primary-teal-600 bg-primary-teal-50/10' : 'border-gray-100 bg-white'}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
@@ -298,7 +298,7 @@ export function NewCustomerWizard() {
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" className="sr-only peer" checked={showPassport} onChange={e => setShowPassport(e.target.checked)} />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-teal-600"></div>
                                         </label>
                                     </div>
 
@@ -370,7 +370,7 @@ export function NewCustomerWizard() {
                                 </div>
 
                                 {/* Visa Section */}
-                                <div className={`p-4 rounded-xl border-2 transition-all ${showVisa ? 'border-black bg-gray-50' : 'border-gray-100 bg-white'}`}>
+                                <div className={`p-4 rounded-xl border-2 transition-all ${showVisa ? 'border-primary-teal-600 bg-primary-teal-50/10' : 'border-gray-100 bg-white'}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
@@ -383,7 +383,7 @@ export function NewCustomerWizard() {
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" className="sr-only peer" checked={showVisa} onChange={e => setShowVisa(e.target.checked)} />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-teal-600"></div>
                                         </label>
                                     </div>
 
@@ -458,8 +458,8 @@ export function NewCustomerWizard() {
                             </div>
 
                             <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                                <button type="button" onClick={() => setStep(1)} className="text-gray-600 hover:text-black font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
-                                <button type="submit" className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 font-medium inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                <button type="button" onClick={() => setStep(1)} className="text-gray-600 hover:text-primary-teal-600 font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
+                                <button type="submit" className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-8 py-3 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium inline-flex items-center gap-2 transition-all shadow-md shadow-primary-teal-100 hover:shadow-lg transform hover:-translate-y-0.5">
                                     Continue <ArrowRight className="h-4 w-4" />
                                 </button>
                             </div>
@@ -472,7 +472,7 @@ export function NewCustomerWizard() {
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900 mb-6">Family Setup</h2>
 
-                                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${step3Form.watch('isFamilyHead') ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${step3Form.watch('isFamilyHead') ? 'border-primary-teal-600 bg-primary-teal-50/10' : 'border-gray-100 hover:border-gray-200'}`}>
                                     <input type="checkbox" {...step3Form.register('isFamilyHead')} className="mt-1" />
                                     <div>
                                         <div className="font-semibold text-gray-900">Set as Family Head</div>
@@ -493,7 +493,7 @@ export function NewCustomerWizard() {
                             </div>
 
                             <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                                <button type="button" onClick={() => setStep(2)} className="text-gray-600 hover:text-black font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
+                                <button type="button" onClick={() => setStep(2)} className="text-gray-600 hover:text-primary-teal-600 font-medium text-sm flex items-center gap-1"><ArrowLeft className="h-4 w-4" /> Back</button>
 
                                 <div className="flex gap-3">
                                     <button

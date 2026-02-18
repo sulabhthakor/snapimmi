@@ -44,8 +44,13 @@ export async function inviteTeamMember(firmId: string, data: z.infer<typeof Invi
     // @ts-ignore
     if (session?.user?.firmId !== firmId) return { success: false, error: "Unauthorized" };
 
+    console.log(`[inviteTeamMember] Inviting user to firm ${firmId}. Data:`, JSON.stringify(data, null, 2));
+
     const validation = InviteUserSchema.safeParse(data);
-    if (!validation.success) return { success: false, error: "Invalid data" };
+    if (!validation.success) {
+        console.error("[inviteTeamMember] Validation failed:", validation.error.format());
+        return { success: false, error: "Invalid data" };
+    }
 
     const { name, email, password, role } = validation.data;
 
@@ -53,28 +58,15 @@ export async function inviteTeamMember(firmId: string, data: z.infer<typeof Invi
     const existing = await prisma.user.findUnique({
         where: { email }
     });
-    if (existing) return { success: false, error: "Email already registered" };
+    if (existing) {
+        console.warn(`[inviteTeamMember] Email ${email} already registered.`);
+        return { success: false, error: "Email already registered" };
+    }
 
     try {
-        // Hashing - Assuming simple bcrypt or similar is available. 
-        // If not, I should probably check dependencies first.
-        // Let's use a dummy hash for now if I'm not sure, but to be safe I'll assume `bcryptjs`
-        // or just store plain text if this is a demo environment (BAD PRACTICE).
-        // Let's look for a crypto util. 
-        // I will do a dynamic import or just standard bcryptjs.
-        // Actually, let's just do it right. I'll check package.json in the next step if this fails?
-        // No, I'll try to use `bcryptjs` as it is very common. if not found, I'll add it.
-        // Wait, the user has "Argon2 hashed" comment in schema.
-        // I should stick to that.
-
-        // I'll skip the import and assume I can use a global or simple mock for now if I don't see the util.
-        // Actually, I should probably look at `auth.ts` first.
-
-        // For this step I will write code assuming I can import `hash` from `bcryptjs`.
-        // If it fails I will fix it.
         const hashedPassword = await hash(password, 10);
 
-        await prisma.user.create({
+        const newUser = await prisma.user.create({
             data: {
                 firmId,
                 name,
@@ -85,10 +77,11 @@ export async function inviteTeamMember(firmId: string, data: z.infer<typeof Invi
             }
         });
 
+        console.log(`[inviteTeamMember] Successfully created user ${newUser.id}`);
         revalidatePath(`/dashboard/${firmId}/settings`);
         return { success: true };
     } catch (e) {
-        console.error(e);
+        console.error("[inviteTeamMember] Error inviting user:", e);
         return { success: false, error: "Failed to invite user" };
     }
 }

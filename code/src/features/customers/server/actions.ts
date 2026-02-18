@@ -16,8 +16,10 @@ export async function getCustomers(filters: CustomerFilters) {
 
     if (!firmId) return { data: [], total: 0 };
 
-    const { search, page, limit, status } = filters;
+    const { search, page, limit, status, sortBy, sortOrder } = filters;
     const skip = (page - 1) * limit;
+
+    console.log(`[getCustomers] Fetching customers for firm ${firmId}. Filters:`, filters);
 
     const where: any = {
         firmId: firmId,
@@ -51,22 +53,40 @@ export async function getCustomers(filters: CustomerFilters) {
         };
     }
 
-    const [data, total] = await Promise.all([
-        prisma.customer.findMany({
-            where,
-            skip,
-            take: limit,
-            orderBy: { createdAt: 'desc' },
-            include: {
-                _count: {
-                    select: { applications: true, documents: true }
-                }
+    // Dynamic Ordering
+    let orderBy: any = { createdAt: sortOrder || 'desc' };
+    if (sortBy === 'fullName') {
+        orderBy = { fullName: sortOrder || 'asc' };
+    } else if (sortBy === 'applicationCount') {
+        orderBy = {
+            applications: {
+                _count: sortOrder || 'desc'
             }
-        }),
-        prisma.customer.count({ where })
-    ]);
+        };
+    }
 
-    return { data, total, pageCount: Math.ceil(total / limit) };
+    try {
+        const [data, total] = await Promise.all([
+            prisma.customer.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy,
+                include: {
+                    _count: {
+                        select: { applications: true, documents: true }
+                    }
+                }
+            }),
+            prisma.customer.count({ where })
+        ]);
+
+        console.log(`[getCustomers] Found ${total} customers.`);
+        return { data, total, pageCount: Math.ceil(total / limit) };
+    } catch (error) {
+        console.error("[getCustomers] Error fetching customers:", error);
+        return { data: [], total: 0, error: "Failed to fetch customers" };
+    }
 }
 
 export async function createCustomer(data: z.infer<typeof CreateCustomerRequestSchema>) {
@@ -75,11 +95,15 @@ export async function createCustomer(data: z.infer<typeof CreateCustomerRequestS
     const firmId = session?.user?.firmId;
 
     if (!firmId) {
+        console.error("[createCustomer] Unauthorized attempt.");
         return { success: false, error: "Unauthorized" };
     }
 
+    console.log("[createCustomer] Creating customer for firm:", firmId, "Data:", JSON.stringify(data, null, 2));
+
     const validation = CreateCustomerRequestSchema.safeParse(data);
     if (!validation.success) {
+        console.error("[createCustomer] Validation failed:", validation.error.format());
         return { success: false, error: validation.error.format() };
     }
 
@@ -149,11 +173,12 @@ export async function createCustomer(data: z.infer<typeof CreateCustomerRequestS
             return customer;
         });
 
+        console.log("[createCustomer] Successfully created customer:", result.id);
         revalidatePath(`/dashboard/${firmId}/customers`);
         return { success: true, data: result };
 
     } catch (error) {
-        console.error("Create Customer Error:", error);
+        console.error("[createCustomer] Error creating customer:", error);
         return { success: false, error: "Failed to create customer" };
     }
 }
@@ -230,14 +255,18 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
     const firmId = session?.user?.firmId;
 
     if (!firmId) {
+        console.error("[updateCustomer] Unauthorized attempt.");
         return { success: false, error: "Unauthorized" };
     }
+
+    console.log("[updateCustomer] Updating customer. Data:", JSON.stringify(data, null, 2));
 
     // Lazy import schema to avoid circular dependency issues if any, though here it's fine
     const { UpdateCustomerRequestSchema } = await import("../types");
     const validation = UpdateCustomerRequestSchema.safeParse(data);
 
     if (!validation.success) {
+        console.error("[updateCustomer] Validation failed:", validation.error.format());
         return { success: false, error: validation.error.format() };
     }
 
@@ -351,13 +380,14 @@ export async function updateCustomer(data: z.infer<typeof import("../types").Upd
             return customer;
         });
 
+        console.log("[updateCustomer] Successfully updated customer:", result.id);
         revalidatePath(`/dashboard/${firmId}/customers/${id}`);
         revalidatePath(`/dashboard/${firmId}/customers`);
 
         return { success: true, data: result };
 
     } catch (error) {
-        console.error("Update Customer Error:", error);
+        console.error("[updateCustomer] Error updating customer:", error);
         return { success: false, error: "Failed to update customer" };
     }
 }
@@ -379,6 +409,7 @@ export async function deleteCustomer(customerId: string) {
     }
 
     try {
+        console.log(`[deleteCustomer] Deleting customer ${customerId} from firm ${firmId}`);
         await prisma.customer.update({
             where: { id: customerId, firmId },
             data: { deletedAt: new Date() } // Soft Delete
@@ -387,7 +418,7 @@ export async function deleteCustomer(customerId: string) {
         revalidatePath(`/dashboard/${firmId}/customers`);
         return { success: true };
     } catch (error) {
-        console.error("Delete Customer Error:", error);
+        console.error("[deleteCustomer] Error deleting customer:", error);
         return { success: false, error: "Failed to delete customer" };
     }
 }

@@ -85,7 +85,7 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full sm:w-auto justify-center bg-white border ${hasActiveFilter ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm transition-all hover:text-black`}
+                className={`w-full sm:w-auto justify-center bg-white border ${hasActiveFilter ? 'border-primary-teal-500 ring-2 ring-primary-teal-100' : 'border-gray-300'} text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm transition-all hover:text-black`}
             >
                 <Calendar className="h-4 w-4" />
                 {hasActiveFilter ? 'Date: Custom Range' : 'Date Range'}
@@ -132,7 +132,7 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
                                         type="date"
                                         value={fromDate}
                                         onChange={(e) => setFromDate(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-teal-500 focus:border-primary-teal-500"
                                     />
                                 </div>
                                 <div>
@@ -141,13 +141,13 @@ export function DateRangePicker({ firmId }: DateRangePickerProps) {
                                         type="date"
                                         value={toDate}
                                         onChange={(e) => setToDate(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-teal-500 focus:border-primary-teal-500"
                                     />
                                 </div>
                                 <button
                                     onClick={applyCustomRange}
                                     disabled={!fromDate || !toDate}
-                                    className="w-full bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                                    className="w-full bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-primary-teal-600 hover:to-primary-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
                                 >
                                     Apply Custom Range
                                 </button>

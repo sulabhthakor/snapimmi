@@ -171,7 +171,7 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                                             <button
                                                 onClick={(e) => handleQuickEdit(e, item)}
                                                 disabled={isFetching}
-                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-black transition-colors shadow-sm disabled:opacity-50"
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-primary-teal-50 hover:text-primary-teal-600 hover:border-primary-teal-200 transition-colors shadow-sm disabled:opacity-50"
                                             >
                                                 {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Edit2 className="h-3 w-3" />}
                                                 Quick Fix
@@ -228,7 +228,7 @@ export function ExpiryTable({ data, firmId }: ExpiryTableProps) {
                                 <button
                                     onClick={(e) => handleQuickEdit(e, item)}
                                     disabled={isFetching}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-primary-teal-50 hover:text-primary-teal-600 hover:border-primary-teal-200 transition-colors shadow-sm disabled:opacity-50"
                                 >
                                     {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Edit2 className="h-3 w-3" />}
                                     Fix
