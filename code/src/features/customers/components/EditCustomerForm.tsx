@@ -103,8 +103,8 @@ export function EditCustomerForm({ customer, firmId }: { customer: CustomerData,
                 id: customer.id, // Explicitly add ID
                 passport: passport ? {
                     ...passport,
-                    issueDate: passport.issueDate ? new Date(passport.issueDate) : undefined,
-                    expiryDate: passport.expiryDate ? new Date(passport.expiryDate) : undefined,
+                    issueDate: passport.issueDate ? new Date(passport.issueDate as any) : undefined,
+                    expiryDate: passport.expiryDate ? new Date(passport.expiryDate as any) : undefined,
                 } : undefined
             };
 
