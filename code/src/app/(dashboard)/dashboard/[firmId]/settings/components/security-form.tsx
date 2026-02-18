@@ -98,7 +98,7 @@ export function SecurityForm() {
                 <button
                     type="submit"
                     disabled={isPending || !form.formState.isDirty}
-                    className="bg-black text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    className="bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-6 py-2.5 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 transition-all shadow-md shadow-primary-teal-100 hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                     {isPending ? (
                         <>

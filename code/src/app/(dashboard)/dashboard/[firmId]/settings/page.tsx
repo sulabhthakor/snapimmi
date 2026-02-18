@@ -46,7 +46,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ firmI
                     {/* Profile Section */}
                     <div id="profile" className="scroll-mt-32">
                         <div className="mb-5 flex items-center gap-3">
-                            <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg shadow-indigo-100">
+                            <div className="shrink-0 p-2.5 bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 rounded-xl shadow-lg shadow-primary-teal-100">
                                 <User className="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -67,7 +67,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ firmI
                     {/* Security Section */}
                     <div id="security" className="scroll-mt-32">
                         <div className="mb-5 flex items-center gap-3">
-                            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg shadow-emerald-100">
+                            <div className="shrink-0 p-2.5 bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 rounded-xl shadow-lg shadow-primary-teal-100">
                                 <Shield className="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -83,7 +83,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ firmI
                     {/* Team Section */}
                     <div id="team" className="scroll-mt-32">
                         <div className="mb-5 flex items-center gap-3">
-                            <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-100">
+                            <div className="shrink-0 p-2.5 bg-gradient-to-br from-primary-teal-500 to-primary-teal-600 rounded-xl shadow-lg shadow-primary-teal-100">
                                 <Users className="h-5 w-5 text-white" />
                             </div>
                             <div>

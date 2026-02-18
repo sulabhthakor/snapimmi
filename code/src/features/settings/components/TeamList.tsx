@@ -24,7 +24,7 @@ export function TeamList({ firmId, members, currentUserRole }: { firmId: string,
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-lg font-bold text-gray-900">Team Members</h2>
                     <p className="text-sm text-gray-500">Manage who has access to your firm dashboard.</p>
@@ -32,7 +32,7 @@ export function TeamList({ firmId, members, currentUserRole }: { firmId: string,
                 {currentUserRole === 'FIRM_OWNER' && (
                     <button
                         onClick={() => setIsAddOpen(true)}
-                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all shadow-sm"
+                        className="flex items-center gap-2 bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-primary-teal-600 hover:to-primary-teal-700 transition-all shadow-md shadow-primary-teal-100"
                     >
                         <UserPlus className="h-4 w-4" />
                         Add Member
@@ -40,7 +40,7 @@ export function TeamList({ firmId, members, currentUserRole }: { firmId: string,
                 )}
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto shadow-sm">
                 <table className="w-full text-sm text-left">
                     <thead className="bg-gray-50/50 border-b border-gray-100 text-gray-500">
                         <tr>

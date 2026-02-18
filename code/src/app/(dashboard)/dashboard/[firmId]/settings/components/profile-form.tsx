@@ -43,7 +43,7 @@ export function ProfileForm({ user }: { user: { name: string; email: string } })
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="flex items-center gap-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mb-8">
                 <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white shadow-md">
                     <span className="text-2xl font-bold text-gray-400">
                         {user.name?.charAt(0) || 'U'}
@@ -89,7 +89,7 @@ export function ProfileForm({ user }: { user: { name: string; email: string } })
                 <button
                     type="submit"
                     disabled={isPending || !form.formState.isDirty}
-                    className="bg-black text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    className="w-full sm:w-auto bg-gradient-to-r from-primary-teal-500 to-primary-teal-600 text-white px-6 py-2.5 rounded-lg hover:from-primary-teal-600 hover:to-primary-teal-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-teal-100 hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                     {isPending ? (
                         <>
